@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus & Balance Tracker</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons (Stable Version) -->
+    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .progress-bar {
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .slide-up { animation: slideUp 0.4s ease-out; }
+        .pulse-slow { animation: pulseSlow 3s infinite; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes pulseSlow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Utility to hide elements */
+        .hidden-force {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex items-center justify-center p-0 md:p-4">
+
+    <!-- Mobile Container -->
+    <div class="w-full max-w-md bg-white h-screen md:h-[90vh] md:rounded-3xl shadow-2xl overflow-hidden flex flex-col relative">
+
+        <!-- Header -->
+        <header class="p-6 bg-white border-b border-slate-100 flex justify-between items-center z-10 shrink-0">
+            <div>
+                <h1 class="text-xl font-black text-indigo-900 tracking-tight flex items-center gap-2">
+                    <i data-lucide="zap" class="text-amber-500 w-5 h-5 fill-current"></i>
+                    FocusFlow
+                </h1>
+                <p class="text-xs text-slate-500 font-medium mt-1">Reclaim your time</p>
+            </div>
+            <button onclick="window.app.resetDay()" class="p-2 text-slate-400 hover:text-rose-500 transition-colors" title="Reset Day">
+                <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+            </button>
+        </header>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="flex-1 overflow-y-auto no-scrollbar relative bg-slate-50/50">
+            
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="p-6 space-y-6 slide-up">
+                
+                <!-- Score Card -->
+                <div class="bg-white rounded-2xl p-6 text-center border border-slate-100 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-rose-400 via-indigo-500 to-emerald-400"></div>
+                    <h2 class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">Daily Balance Score</h2>
+                    <div id="score-display" class="text-6xl font-black text-indigo-600 mb-2 transition-colors duration-500">50</div>
+                    <p id="score-message" class="text-sm font-medium text-slate-600">Neutral Start</p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Study Stat -->
+                    <div class="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex flex-col items-center">
+                        <div class="p-2 bg-white rounded-full text-emerald-600 mb-2 shadow-sm">
+                            <i data-lucide="book-open" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-slate-400 text-[10px] font-bold uppercase">Studying</span>
+                        <span id="study-hours-display" class="text-2xl font-bold text-slate-800">0.0h</span>
+                    </div>
+
+                    <!-- Screen Stat -->
+                    <div class="bg-rose-50 rounded-2xl p-4 border border-rose-100 flex flex-col items-center">
+                        <div class="p-2 bg-white rounded-full text-rose-500 mb-2 shadow-sm">
+                            <i data-lucide="smartphone" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-slate-400 text-[10px] font-bold uppercase">Phone Time</span>
+                        <span id="screen-hours-display" class="text-2xl font-bold text-slate-800">0.0h</span>
+                    </div>
+                </div>
+
+                <!-- Comparison Bars -->
+                <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <i data-lucide="bar-chart-2" class="w-4 h-4 text-indigo-500"></i> Daily Progress
+                    </h3>
+                    
+                    <!-- Study Bar -->
+                    <div class="mb-5">
+                        <div class="flex justify-between text-xs font-medium mb-2">
+                            <span class="text-emerald-700">Study Goal</span>
+                            <span class="text-slate-400"><span id="study-val">0</span> / 6 hrs</span>
+                        </div>
+                        <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div id="study-bar" class="h-full bg-emerald-500 progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Screen Bar -->
+                    <div>
+                        <div class="flex justify-between text-xs font-medium mb-2">
+                            <span class="text-rose-700">Phone Limit</span>
+                            <span class="text-slate-400"><span id="screen-val">0</span> / 2 hrs</span>
+                        </div>
+                        <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div id="screen-bar" class="h-full bg-rose-500 progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="h-20"></div> <!-- Spacer for bottom nav -->
+            </div>
+
+            <!-- VIEW: TIMER -->
+            <div id="view-timer" class="hidden h-full flex flex-col p-6 fade-in bg-white">
+                <div class="flex-1 flex flex-col items-center justify-center -mt-10">
+                    
+                    <!-- Timer Circle -->
+                    <div class="relative w-72 h-72 flex items-center justify-center mb-12">
+                        <!-- Outer ring -->
+                        <div class="absolute inset-0 rounded-full border-[6px] border-slate-100"></div>
+                        <!-- Active ring animation -->
+                        <div id="timer-spinner" class="hidden absolute inset-0 rounded-full border-[6px] border-t-indigo-500 border-r-transparent border-b-transparent border-l-transparent animate-spin duration-[3s]"></div>
+                        
+                        <!-- Time Display -->
+                        <div class="text-center z-10">
+                            <div id="timer-display" class="text-6xl font-black text-slate-800 tabular-nums tracking-tighter">00:00:00</div>
+                            <div id="timer-status" class="text-indigo-500 font-medium mt-2 text-sm uppercase tracking-widest">Ready</div>
+                        </div>
+                    </div>
+
+                    <!-- Static Button Container with Toggle Logic -->
+                    <button id="btn-start" onclick="window.app.toggleTimer()" class="w-full max-w-xs bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-indigo-200 active:scale-95 transition-all flex items-center justify-center gap-3 mb-4">
+                        <i data-lucide="play" class="w-6 h-6 fill-current"></i>
+                        <span>Start Session</span>
+                    </button>
+
+                    <button id="btn-pause" onclick="window.app.toggleTimer()" class="hidden w-full max-w-xs bg-rose-50 text-rose-600 hover:bg-rose-100 py-4 rounded-xl font-bold text-lg shadow-sm active:scale-95 transition-all flex items-center justify-center gap-3 mb-4">
+                        <i data-lucide="pause" class="w-6 h-6 fill-current"></i>
+                        <span>Pause Session</span>
+                    </button>
+                    
+                    <button onclick="window.app.switchView('dashboard')" class="text-slate-400 hover:text-slate-600 font-medium py-2">
+                        Back to Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- VIEW: LOG -->
+            <div id="view-log" class="hidden p-6 fade-in h-full flex flex-col">
+                <div class="flex-1">
+                    <div class="bg-white rounded-2xl p-8 text-center border border-slate-100 shadow-sm mb-6 mt-4">
+                        <div class="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500">
+                            <i data-lucide="smartphone" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2">Log Screen Time</h3>
+                        <p class="text-sm text-slate-500">Be honest! Tracking is the first step to changing.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-3 mb-8">
+                        <button onclick="window.app.addScreenTime(15, this)" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-rose-400 hover:bg-rose-50 bg-white group transition-all">
+                            <span class="font-bold text-slate-700 group-hover:text-rose-700">Add 15 Minutes</span>
+                            <span class="text-slate-400 group-hover:text-rose-400">+</span>
+                        </button>
+                        <button onclick="window.app.addScreenTime(30, this)" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-rose-400 hover:bg-rose-50 bg-white group transition-all">
+                            <span class="font-bold text-slate-700 group-hover:text-rose-700">Add 30 Minutes</span>
+                            <span class="text-slate-400 group-hover:text-rose-400">+</span>
+                        </button>
+                        <button onclick="window.app.addScreenTime(60, this)" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-rose-400 hover:bg-rose-50 bg-white group transition-all">
+                            <span class="font-bold text-slate-700 group-hover:text-rose-700">Add 1 Hour</span>
+                            <span class="text-slate-400 group-hover:text-rose-400">+</span>
+                        </button>
+                    </div>
+
+                    <button onclick="window.app.switchView('dashboard')" class="w-full py-4 bg-slate-800 text-white rounded-xl font-bold shadow-lg active:scale-95 transition-transform mb-20">
+                        Done
+                    </button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bg-white border-t border-slate-100 p-2 flex justify-around items-center h-20 shrink-0 absolute bottom-0 w-full z-20">
+            <button onclick="window.app.switchView('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-1 p-2 w-20 rounded-xl text-indigo-600">
+                <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
+                <span class="text-[10px] font-bold">Home</span>
+            </button>
+            
+            <div class="relative -top-6">
+                <button onclick="window.app.switchView('timer')" class="bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg shadow-indigo-200 transition-transform active:scale-90 flex items-center justify-center">
+                    <i data-lucide="play" class="w-8 h-8 fill-current ml-1"></i>
+                </button>
+            </div>
+
+            <button onclick="window.app.switchView('log')" id="nav-log" class="flex flex-col items-center gap-1 p-2 w-20 rounded-xl text-slate-400 hover:text-rose-500 transition-colors">
+                <i data-lucide="plus-circle" class="w-6 h-6"></i>
+                <span class="text-[10px] font-bold">Log Phone</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // Define app in global scope immediately
+        window.app = {
+            config: {
+                studyGoalHours: 6,
+                screenLimitHours: 2,
+                baseScore: 50
+            },
+            state: {
+                studySeconds: 0,
+                screenMinutes: 0,
+                isTimerRunning: false,
+                timerInterval: null
+            },
+            
+            init: function() {
+                try {
+                    // Load data
+                    const savedData = localStorage.getItem('focusFlowData_v2');
+                    if (savedData) {
+                        const parsed = JSON.parse(savedData);
+                        if (parsed.date === new Date().toDateString()) {
+                            this.state.studySeconds = parsed.studySeconds || 0;
+                            this.state.screenMinutes = parsed.screenMinutes || 0;
+                        }
+                    }
+                    
+                    // Initial Render
+                    this.updateUI();
+                    
+                    // Render Icons
+                    if (window.lucide) {
+                        window.lucide.createIcons();
+                    }
+                } catch (e) {
+                    console.error("Init failed:", e);
+                }
+            },
+
+            saveData: function() {
+                const data = {
+                    date: new Date().toDateString(),
+                    studySeconds: this.state.studySeconds,
+                    screenMinutes: this.state.screenMinutes
+                };
+                localStorage.setItem('focusFlowData_v2', JSON.stringify(data));
+            },
+
+            toggleTimer: function() {
+                if (this.state.isTimerRunning) {
+                    this.pauseTimer();
+                } else {
+                    this.startTimer();
+                }
+            },
+
+            startTimer: function() {
+                this.state.isTimerRunning = true;
+                
+                // Toggle Button Visibility
+                document.getElementById('btn-start').classList.add('hidden');
+                document.getElementById('btn-pause').classList.remove('hidden');
+                
+                // UI Updates
+                const statusEl = document.getElementById('timer-status');
+                statusEl.innerText = "Focusing...";
+                statusEl.className = "text-emerald-500 font-medium mt-2 text-sm uppercase tracking-widest";
+                document.getElementById('timer-spinner').classList.remove('hidden');
+
+                // Interval
+                this.state.timerInterval = setInterval(() => {
+                    this.state.studySeconds++;
+                    this.updateTimerDisplay();
+                    if(this.state.studySeconds % 60 === 0) this.saveData();
+                }, 1000);
+            },
+
+            pauseTimer: function() {
+                this.state.isTimerRunning = false;
+                if (this.state.timerInterval) clearInterval(this.state.timerInterval);
+                this.saveData();
+
+                // Toggle Button Visibility
+                document.getElementById('btn-start').classList.remove('hidden');
+                document.getElementById('btn-pause').classList.add('hidden');
+
+                // UI Updates
+                const statusEl = document.getElementById('timer-status');
+                statusEl.innerText = "Paused";
+                statusEl.className = "text-amber-500 font-medium mt-2 text-sm uppercase tracking-widest";
+                document.getElementById('timer-spinner').classList.add('hidden');
+                
+                this.updateUI();
+            },
+
+            updateTimerDisplay: function() {
+                const hrs = Math.floor(this.state.studySeconds / 3600);
+                const mins = Math.floor((this.state.studySeconds % 3600) / 60);
+                const secs = this.state.studySeconds % 60;
+                document.getElementById('timer-display').innerText = 
+                    `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            },
+
+            addScreenTime: function(minutes, btnElement) {
+                this.state.screenMinutes += minutes;
+                this.saveData();
+                this.updateUI();
+                
+                // Visual feedback using the passed element safely
+                if(btnElement) {
+                    const originalClasses = btnElement.className;
+                    btnElement.classList.add('bg-rose-100', 'border-rose-300');
+                    setTimeout(() => {
+                        btnElement.classList.remove('bg-rose-100', 'border-rose-300');
+                    }, 200);
+                }
+            },
+
+            resetDay: function() {
+                if(confirm("Start a new day? This will reset your stats to zero.")) {
+                    this.pauseTimer();
+                    this.state.studySeconds = 0;
+                    this.state.screenMinutes = 0;
+                    this.saveData();
+                    this.updateUI();
+                    this.updateTimerDisplay();
+                    this.switchView('dashboard');
+                }
+            },
+
+            switchView: function(viewName) {
+                // Hide all
+                ['dashboard', 'timer', 'log'].forEach(v => {
+                    document.getElementById(`view-${v}`).classList.add('hidden');
+                });
+                
+                // Show current
+                document.getElementById(`view-${viewName}`).classList.remove('hidden');
+
+                // Update Nav State
+                const navDash = document.getElementById('nav-dashboard');
+                const navLog = document.getElementById('nav-log');
+                
+                // Reset basic classes
+                navDash.className = "flex flex-col items-center gap-1 p-2 w-20 rounded-xl transition-colors text-slate-400 hover:text-indigo-600";
+                navLog.className = "flex flex-col items-center gap-1 p-2 w-20 rounded-xl transition-colors text-slate-400 hover:text-rose-500";
+                
+                // Apply active classes
+                if (viewName === 'dashboard') {
+                    navDash.classList.remove('text-slate-400');
+                    navDash.classList.add('text-indigo-600');
+                    this.updateUI();
+                } else if (viewName === 'log') {
+                    navLog.classList.remove('text-slate-400');
+                    navLog.classList.add('text-rose-500');
+                }
+            },
+
+            updateUI: function() {
+                const studyHours = (this.state.studySeconds / 3600);
+                const screenHours = (this.state.screenMinutes / 60);
+                
+                // Text
+                document.getElementById('study-hours-display').innerText = studyHours.toFixed(1) + 'h';
+                document.getElementById('screen-hours-display').innerText = screenHours.toFixed(1) + 'h';
+                document.getElementById('study-val').innerText = studyHours.toFixed(1);
+                document.getElementById('screen-val').innerText = screenHours.toFixed(1);
+
+                // Bars
+                const studyPct = Math.min(100, (studyHours / this.config.studyGoalHours) * 100);
+                const screenPct = Math.min(100, (screenHours / this.config.screenLimitHours) * 100);
+                document.getElementById('study-bar').style.width = `${studyPct}%`;
+                document.getElementById('screen-bar').style.width = `${screenPct}%`;
+
+                // Score
+                let score = this.config.baseScore + (studyHours * 10) - (screenHours * 15);
+                score = Math.max(0, Math.min(100, score));
+                
+                const scoreEl = document.getElementById('score-display');
+                scoreEl.innerText = Math.round(score);
+
+                // Colors
+                let message = "";
+                let colorClass = "";
+                if (score >= 80) { colorClass = "text-emerald-500"; message = "Academic Weapon! 🚀"; }
+                else if (score >= 50) { colorClass = "text-indigo-600"; message = "Good Balance ✨"; }
+                else if (score >= 30) { colorClass = "text-amber-500"; message = "Keep Pushing 💪"; }
+                else { colorClass = "text-rose-500"; message = "Put the phone down! 📵"; }
+                
+                scoreEl.className = `text-6xl font-black mb-2 transition-colors duration-500 ${colorClass}`;
+                document.getElementById('score-message').innerText = message;
+                
+                this.updateTimerDisplay();
+            }
+        };
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            window.app.init();
+        });
+    </script>
+</body>
+</html>
+
+

@@ -198,7 +198,12 @@
 
         <!-- History View -->
         <section id="history-view" class="p-6 hidden fade-in">
-            <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-6">Log Book</h2>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Log Book</h2>
+                <span id="history-count"
+                    class="text-sm font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1 rounded-full">0
+                    entries</span>
+            </div>
             <div
                 class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden transition-colors duration-300">
                 <ul id="history-list" class="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -290,14 +295,21 @@
                     <i class="ph ph-floppy-disk text-lg"></i> Save Settings
                 </button>
 
-                <!-- Data Management -->
+                <!-- App & Data Management -->
                 <div class="pt-6 border-t border-slate-100 dark:border-slate-700 flex flex-col gap-3">
-                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Data
+                    <label class="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">App & Data
                         Management</label>
+
+                    <button onclick="updateApp()"
+                        class="w-full bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 font-bold py-3 rounded-xl active:scale-95 transition-transform flex justify-center items-center gap-2 hover:bg-slate-200 dark:hover:bg-slate-700">
+                        <i class="ph ph-arrows-clockwise text-lg"></i> Update App (Refresh)
+                    </button>
+
                     <button onclick="downloadData()"
                         class="w-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold py-3 rounded-xl active:scale-95 transition-transform flex justify-center items-center gap-2">
                         <i class="ph ph-download-simple text-lg"></i> Export Data (JSON)
                     </button>
+
                     <button onclick="requestResetData()"
                         class="w-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-bold py-3 rounded-xl active:scale-95 transition-transform flex justify-center items-center gap-2">
                         <i class="ph ph-warning-circle text-lg"></i> Reset All Data
@@ -723,6 +735,7 @@
         window.downloadData = () => {
             const exportData = {
                 app: "TrackFit Weight Tracker",
+                exportedAt: new Date().toISOString(),
                 settings: userSettings,
                 entries: weightEntries
             };
@@ -763,7 +776,14 @@
                     updateInsightsUI();
                 }
             );
-        }
+        };
+
+        window.updateApp = () => {
+            showToast("Refreshing app...");
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 500);
+        };
 
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
@@ -858,6 +878,12 @@
         function updateHistoryUI() {
             const list = document.getElementById('history-list');
             list.innerHTML = '';
+
+            // Update the new history count badge
+            const countEl = document.getElementById('history-count');
+            if (countEl) {
+                countEl.innerText = `${weightEntries.length} ${weightEntries.length === 1 ? 'entry' : 'entries'}`;
+            }
 
             weightEntries.forEach(entry => {
                 const li = document.createElement('li');

@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- SEO Metadata -->
+    <title>TaskFlow</title>
+    <meta name="description"
+        content="A premium, mobile-first task management application with daily routines, monthly stats, and a dark glassmorphism design. Track your productivity with consistency heatmaps.">
+    <meta name="keywords" content="task manager, daily planner, productivity app, PWA, recurring tasks, habit tracker">
+    <meta name="author" content="Dev Namdev">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://devnamdev2003.github.io/Testapp/taskflow">
+    <meta property="og:title" content="TaskFlow">
+    <meta property="og:description"
+        content="Manage your day with elegance. Featuring sticky navigation, monthly analytics, and recurring routines.">
+    <meta property="og:image" content="https://devnamdev2003.github.io/Testapp/taskflow/img/share.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://devnamdev2003.github.io/Testapp/taskflow">
+    <meta property="twitter:title" content="TaskFlow">
+    <meta property="twitter:description" content="The ultimate dark-mode productivity tool for daily planning.">
+    <meta property="twitter:image" content="https://devnamdev2003.github.io/Testapp/taskflow/img/share.png">
+
+    <!-- PWA / Mobile App Settings -->
+    <meta name="theme-color" content="#05070a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TaskFlow">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="https://devnamdev2003.github.io/Testapp/taskflow/img/favicon_io/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="https://devnamdev2003.github.io/Testapp/taskflow/img/favicon_io/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="https://devnamdev2003.github.io/Testapp/taskflow/img/favicon_io/favicon-16x16.png" />
+    <link rel="manifest" href="https://devnamdev2003.github.io/Testapp/taskflow/img/favicon_io/site.webmanifest" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --bg-dark: #05070a;
+            --accent: #4f46e5;
+            --surface: #111827;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: #f1f5f9;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glass-card {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Modal Animation */
+        .modal-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-content {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(100%);
+        }
+
+        .modal-active.modal-overlay {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-active .modal-content {
+            transform: translateY(0);
+        }
+
+        .task-item {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .task-item.leaving {
+            opacity: 0;
+            transform: scale(0.9) translateX(30px);
+        }
+
+        .nav-item-active {
+            color: #818cf8;
+            filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.4));
+        }
+
+        .view-content {
+            display: none;
+        }
+
+        .view-active {
+            display: block;
+            animation: slideUpFade 0.5s ease-out;
+        }
+
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .input-error {
+            border-color: #ef4444 !important;
+            animation: shake 0.2s ease-in-out 0s 2;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Heatmap Styles */
+        .heatmap-cell {
+            aspect-ratio: 1/1;
+            border-radius: 6px;
+            transition: transform 0.2s ease;
+            font-size: 11px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .heatmap-cell:active {
+            transform: scale(0.9);
+        }
+
+        /* Expanded Heatmap Levels (0-8) */
+        .level-0 {
+            background: #1f2937;
+        }
+
+        .level-1 {
+            background: #312e81;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .level-2 {
+            background: #4338ca;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .level-3 {
+            background: #4f46e5;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .level-4 {
+            background: #818cf8;
+            color: #fff;
+        }
+
+        .level-5 {
+            background: #a5b4fc;
+            color: #1e1b4b;
+        }
+
+        .level-6 {
+            background: #c7d2fe;
+            color: #1e1b4b;
+        }
+
+        .level-7 {
+            background: #e0e7ff;
+            color: #1e1b4b;
+        }
+
+        .level-8 {
+            background: #ffffff;
+            color: #1e1b4b;
+        }
+    </style>
+</head>
+
+<body class="pb-32 pt-2">
+
+    <!-- Main Container -->
+    <main class="max-w-md mx-auto px-6">
+
+        <!-- HOME VIEW -->
+        <div id="view-home" class="view-content view-active">
+            <!-- Sticky Date Switcher Container -->
+            <div class="sticky top-0 z-20 py-6 bg-[#05070a]/80 backdrop-blur-xl -mx-6 px-6">
+                <div
+                    class="flex items-center justify-between glass-card p-2 rounded-[2rem] border border-white/5 shadow-inner">
+                    <button onclick="changeDate(-1)"
+                        class="w-12 h-12 rounded-2xl hover:bg-slate-800 flex items-center justify-center transition-all active:scale-90">
+                        <i class="fas fa-chevron-left text-slate-400"></i>
+                    </button>
+                    <div class="text-center">
+                        <p id="display-date" class="font-extrabold text-sm text-white tracking-wide">Today</p>
+                        <p id="display-subtitle"
+                            class="text-[9px] text-slate-500 uppercase tracking-[0.2em] font-bold mt-0.5"></p>
+                    </div>
+                    <button onclick="changeDate(1)"
+                        class="w-12 h-12 rounded-2xl hover:bg-slate-800 flex items-center justify-center transition-all active:scale-90">
+                        <i class="fas fa-chevron-right text-slate-400"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Task List Area -->
+            <div id="task-container" class="space-y-4 pt-2 min-h-[400px]">
+                <!-- Tasks Injected Here -->
+            </div>
+        </div>
+
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard" class="view-content space-y-6 pt-10">
+            <div class="flex items-center justify-between glass-card p-2 rounded-2xl">
+                <button onclick="changeMonth(-1)" class="w-10 h-10 flex items-center justify-center text-slate-400"><i
+                        class="fas fa-chevron-left"></i></button>
+                <span id="dash-month-label" class="font-bold text-sm tracking-wide text-indigo-400"></span>
+                <button onclick="changeMonth(1)" class="w-10 h-10 flex items-center justify-center text-slate-400"><i
+                        class="fas fa-chevron-right"></i></button>
+            </div>
+
+            <!-- Heatmap / Calendar View -->
+            <div class="glass-card p-5 rounded-[2.5rem]">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Consistency Map</h3>
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 rounded-sm level-0"></div>
+                        <div class="w-2 h-2 rounded-sm level-4"></div>
+                        <div class="w-2 h-2 rounded-sm level-8"></div>
+                    </div>
+                </div>
+                <div id="heatmap-grid" class="grid grid-cols-7 gap-2">
+                    <!-- Heatmap cells here -->
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="glass-card p-6 rounded-[2rem] border-l-4 border-indigo-500">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase mb-1 tracking-wider">Total Tasks</p>
+                    <p id="dash-total" class="text-4xl font-black tracking-tighter">0</p>
+                </div>
+                <div class="glass-card p-6 rounded-[2rem] border-l-4 border-emerald-500">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase mb-1 tracking-wider">Finished</p>
+                    <p id="dash-done" class="text-4xl font-black text-emerald-400 tracking-tighter">0</p>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-[2.5rem]">
+                <div class="flex justify-between items-end mb-4">
+                    <div>
+                        <h4 class="font-bold text-lg">Monthly Score</h4>
+                        <p class="text-xs text-slate-500">Focus & Persistence</p>
+                    </div>
+                    <span id="dash-efficiency" class="text-2xl font-black text-indigo-400">0%</span>
+                </div>
+                <div class="w-full bg-slate-900 rounded-full h-3 p-1">
+                    <div id="dash-progress-bar"
+                        class="bg-gradient-to-r from-indigo-600 to-indigo-400 h-full rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(79,70,229,0.5)]"
+                        style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS VIEW -->
+        <div id="view-settings" class="view-content space-y-6 pt-10">
+            <div class="space-y-4">
+                <div class="flex items-center justify-between px-1">
+                    <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Active Routines</h3>
+                    <button onclick="prepareRecurringTask()"
+                        class="text-[10px] bg-indigo-600 text-white px-4 py-2 rounded-xl font-extrabold shadow-lg shadow-indigo-900/40">
+                        <i class="fas fa-plus mr-1"></i> New Routine
+                    </button>
+                </div>
+
+                <div id="recurring-list" class="space-y-4">
+                    <!-- Recurring tasks -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-2xl border-t border-white/5 py-5 px-6 z-40">
+        <div class="max-w-md mx-auto flex justify-around items-center">
+            <button onclick="switchView('home')" id="nav-home"
+                class="flex flex-col items-center gap-1.5 nav-item-active transition-all">
+                <i class="fas fa-house-user text-xl"></i>
+                <span class="text-[9px] font-black uppercase tracking-tighter">Home</span>
+            </button>
+            <button onclick="switchView('dashboard')" id="nav-dashboard"
+                class="flex flex-col items-center gap-1.5 text-slate-500 transition-all">
+                <i class="fas fa-bolt text-xl"></i>
+                <span class="text-[9px] font-black uppercase tracking-tighter">Stats</span>
+            </button>
+            <button onclick="switchView('settings')" id="nav-settings"
+                class="flex flex-col items-center gap-1.5 text-slate-500 transition-all">
+                <i class="fas fa-fingerprint text-xl"></i>
+                <span class="text-[9px] font-black uppercase tracking-tighter">Setup</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- FAB -->
+    <button id="fab" onclick="handleFabClick()"
+        class="fixed bottom-28 right-6 w-16 h-16 bg-indigo-600 rounded-[1.75rem] shadow-[0_12px_40px_rgba(79,70,229,0.4)] flex items-center justify-center text-white text-2xl transition-all active:scale-90 active:rotate-45 z-40 border border-indigo-400/50">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Task Modal -->
+    <div id="add-modal" class="fixed inset-0 z-50 modal-overlay">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" onclick="toggleModal(false)"></div>
+        <div class="absolute bottom-0 left-0 right-0 max-w-md mx-auto modal-content">
+            <div class="bg-slate-900 rounded-t-[3rem] p-8 pb-14 shadow-2xl border-t border-white/10">
+                <div class="w-16 h-1.5 bg-slate-800 rounded-full mx-auto mb-10"></div>
+                <h2 id="modal-title" class="text-3xl font-black mb-10 text-white tracking-tight">New Entry</h2>
+
+                <div class="space-y-8">
+                    <div>
+                        <label
+                            class="block text-[10px] font-black text-slate-500 uppercase mb-4 ml-1 tracking-[0.2em]">Goal
+                            / Action</label>
+                        <input type="text" id="task-input" autocomplete="off" placeholder="What are we doing today?"
+                            class="w-full bg-slate-950 border border-white/5 rounded-2xl p-5 text-white placeholder:text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none font-medium">
+                        <p id="val-error" class="hidden text-rose-500 text-[10px] mt-3 ml-1 font-bold">Entry cannot be
+                            empty.</p>
+                    </div>
+
+                    <!-- Date Range for Recurring Tasks -->
+                    <div id="date-range-fields" class="hidden space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label
+                                    class="block text-[10px] font-black text-slate-500 uppercase mb-3 ml-1 tracking-wider">From</label>
+                                <input type="date" id="start-date"
+                                    class="w-full bg-slate-950 border border-white/5 rounded-2xl p-4 text-white focus:ring-1 focus:ring-indigo-500 outline-none text-xs">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-[10px] font-black text-slate-500 uppercase mb-3 ml-1 tracking-wider">To</label>
+                                <input type="date" id="end-date"
+                                    class="w-full bg-slate-950 border border-white/5 rounded-2xl p-4 text-white focus:ring-1 focus:ring-indigo-500 outline-none text-xs">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-[10px] font-black text-slate-500 uppercase mb-4 ml-1 tracking-[0.2em]">Impact
+                            Level</label>
+                        <div class="flex gap-3 py-1 overflow-x-auto no-scrollbar">
+                            <button onclick="setPriority('low')"
+                                class="priority-btn px-6 py-3 rounded-2xl text-[10px] font-black border border-white/5 text-slate-500 whitespace-nowrap bg-slate-950"
+                                data-val="low">LOW</button>
+                            <button onclick="setPriority('medium')"
+                                class="priority-btn px-6 py-3 rounded-2xl text-[10px] font-black border border-white/5 text-slate-500 whitespace-nowrap bg-slate-950"
+                                data-val="medium">MED</button>
+                            <button onclick="setPriority('high')"
+                                class="priority-btn px-6 py-3 rounded-2xl text-[10px] font-black border border-white/5 text-slate-500 whitespace-nowrap bg-slate-950"
+                                data-val="high">HIGH</button>
+                        </div>
+                    </div>
+
+                    <button onclick="saveTask()"
+                        class="w-full bg-indigo-600 hover:bg-indigo-500 py-5 rounded-[2rem] text-white font-black shadow-2xl shadow-indigo-900/50 transition-all flex items-center justify-center gap-3 active:scale-[0.98] mt-6 tracking-widest text-sm uppercase">
+                        <i class="fas fa-check-double text-lg"></i> <span id="btn-save-label">Save entry</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Date Helper ---
+        const formatDate = (date) => {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        };
+
+        // State
+        let tasks = JSON.parse(localStorage.getItem('taskflow_base')) || [];
+        let recurringTasks = JSON.parse(localStorage.getItem('taskflow_recurring')) || [];
+        let completionsLog = JSON.parse(localStorage.getItem('taskflow_completions')) || {};
+
+        let viewingDate = new Date();
+        viewingDate.setHours(0, 0, 0, 0);
+
+        let dashboardDate = new Date();
+        dashboardDate.setDate(1);
+
+        let activeView = 'home';
+        let formPriority = 'low';
+        let editingId = null;
+        let isRecurringMode = false;
+        let isMonthlyMode = false;
+
+        // UI Helpers
+        const container = document.getElementById('task-container');
+        const input = document.getElementById('task-input');
+        const modal = document.getElementById('add-modal');
+        const valError = document.getElementById('val-error');
+        const dateRangeFields = document.getElementById('date-range-fields');
+
+        function toggleModal(show) {
+            if (show) {
+                modal.classList.add('modal-active');
+                valError.classList.add('hidden');
+                input.classList.remove('input-error');
+                setTimeout(() => input.focus(), 300);
+            } else {
+                modal.classList.remove('modal-active');
+                editingId = null;
+                isRecurringMode = false;
+                isMonthlyMode = false;
+                dateRangeFields.classList.add('hidden');
+            }
+        }
+
+        function switchView(view) {
+            activeView = view;
+            document.querySelectorAll('.view-content').forEach(v => v.classList.remove('view-active'));
+            document.getElementById(`view-${view}`).classList.add('view-active');
+
+            document.querySelectorAll('nav button').forEach(b => b.classList.replace('nav-item-active', 'text-slate-500'));
+            document.getElementById(`nav-${view}`).classList.replace('text-slate-500', 'nav-item-active');
+
+            const fab = document.getElementById('fab');
+            fab.style.display = (view === 'home' || view === 'dashboard') ? 'flex' : 'none';
+
+            if (view === 'home') {
+                viewingDate = new Date();
+                viewingDate.setHours(0, 0, 0, 0);
+                updateDateUI();
+                renderTasks();
+            }
+            if (view === 'dashboard') {
+                dashboardDate = new Date();
+                dashboardDate.setDate(1);
+                renderDashboard();
+            }
+            if (view === 'settings') renderRecurringInSettings();
+        }
+
+        function handleFabClick() {
+            if (activeView === 'home') prepareNewTask();
+            else if (activeView === 'dashboard') prepareMonthlyTask();
+        }
+
+        function changeDate(days) {
+            viewingDate.setDate(viewingDate.getDate() + days);
+            updateDateUI();
+            renderTasks();
+        }
+
+        function updateDateUI() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const diff = viewingDate.getTime() - today.getTime();
+            const daysDiff = diff / (1000 * 3600 * 24);
+
+            let label = viewingDate.toLocaleDateString('en-US', { weekday: 'long' });
+            if (daysDiff === 0) label = "Today";
+            if (daysDiff === 1) label = "Tomorrow";
+            if (daysDiff === -1) label = "Yesterday";
+
+            document.getElementById('display-date').textContent = label;
+            document.getElementById('display-subtitle').textContent = viewingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function setPriority(val) {
+            formPriority = val;
+            document.querySelectorAll('.priority-btn').forEach(btn => {
+                const active = 'priority-btn px-6 py-3 rounded-2xl text-[10px] font-black border-2 border-indigo-500 text-indigo-400 bg-indigo-500/10 shadow-[0_0_15px_rgba(79,70,229,0.2)]';
+                const inactive = 'priority-btn px-6 py-3 rounded-2xl text-[10px] font-black border border-white/5 text-slate-500 bg-slate-950';
+                btn.className = btn.dataset.val === val ? active : inactive;
+            });
+        }
+
+        // CRUD Operations
+        function prepareNewTask() {
+            editingId = null;
+            isRecurringMode = false;
+            isMonthlyMode = false;
+            input.value = '';
+            setPriority('low');
+            dateRangeFields.classList.add('hidden');
+            document.getElementById('modal-title').textContent = "New Goal";
+            document.getElementById('btn-save-label').textContent = "Save Task";
+            toggleModal(true);
+        }
+
+        function prepareRecurringTask() {
+            editingId = null;
+            isRecurringMode = true;
+            isMonthlyMode = false;
+            input.value = '';
+            setPriority('low');
+
+            document.getElementById('start-date').value = formatDate(new Date());
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 14);
+            document.getElementById('end-date').value = formatDate(nextWeek);
+
+            dateRangeFields.classList.remove('hidden');
+            document.getElementById('modal-title').textContent = "New Routine";
+            document.getElementById('btn-save-label').textContent = "Set Routine";
+            toggleModal(true);
+        }
+
+        function prepareMonthlyTask() {
+            editingId = null;
+            isRecurringMode = true;
+            isMonthlyMode = true;
+            input.value = '';
+            setPriority('low');
+
+            const year = dashboardDate.getFullYear();
+            const month = dashboardDate.getMonth();
+            const start = formatDate(new Date(year, month, 1));
+            const end = formatDate(new Date(year, month + 1, 0));
+
+            document.getElementById('start-date').value = start;
+            document.getElementById('end-date').value = end;
+
+            dateRangeFields.classList.add('hidden');
+            const monthName = dashboardDate.toLocaleDateString('en-US', { month: 'long' });
+            document.getElementById('modal-title').textContent = `${monthName} Goal`;
+            document.getElementById('btn-save-label').textContent = "Add Monthly Task";
+            toggleModal(true);
+        }
+
+        function saveTask() {
+            const text = input.value.trim();
+            if (!text) {
+                input.classList.add('input-error');
+                valError.classList.remove('hidden');
+                return;
+            }
+
+            if (isRecurringMode) {
+                const start = document.getElementById('start-date').value;
+                const end = document.getElementById('end-date').value;
+
+                if (!start || !end) return;
+
+                if (editingId) {
+                    recurringTasks = recurringTasks.map(rt => rt.id == editingId ? { ...rt, text, priority: formPriority, fromDate: start, toDate: end } : rt);
+                } else {
+                    recurringTasks.unshift({
+                        id: 'rec_' + Date.now(),
+                        text: text,
+                        priority: formPriority,
+                        fromDate: start,
+                        toDate: end,
+                        monthly: isMonthlyMode
+                    });
+                }
+                localStorage.setItem('taskflow_recurring', JSON.stringify(recurringTasks));
+                if (activeView === 'settings') renderRecurringInSettings();
+            } else {
+                if (editingId) {
+                    tasks = tasks.map(t => t.id == editingId ? { ...t, text, priority: formPriority } : t);
+                } else {
+                    tasks.unshift({
+                        id: Date.now(),
+                        text: text,
+                        priority: formPriority,
+                        completed: false,
+                        targetDate: formatDate(viewingDate)
+                    });
+                }
+                localStorage.setItem('taskflow_base', JSON.stringify(tasks));
+            }
+
+            toggleModal(false);
+            renderTasks();
+            if (activeView === 'dashboard') renderDashboard();
+        }
+
+        function openEdit(id) {
+            const isRec = id.toString().startsWith('rec_');
+            if (isRec) {
+                const rt = recurringTasks.find(t => t.id == id);
+                if (!rt) return;
+                editingId = id;
+                isRecurringMode = true;
+                isMonthlyMode = !!rt.monthly;
+                input.value = rt.text;
+                setPriority(rt.priority);
+                document.getElementById('start-date').value = rt.fromDate;
+                document.getElementById('end-date').value = rt.toDate;
+                dateRangeFields.classList.remove('hidden');
+                document.getElementById('modal-title').textContent = "Edit Routine";
+                document.getElementById('btn-save-label').textContent = "Update Routine";
+            } else {
+                const task = tasks.find(t => t.id == id);
+                if (!task) return;
+                editingId = id;
+                isRecurringMode = false;
+                isMonthlyMode = false;
+                input.value = task.text;
+                setPriority(task.priority);
+                dateRangeFields.classList.add('hidden');
+                document.getElementById('modal-title').textContent = "Edit Goal";
+                document.getElementById('btn-save-label').textContent = "Update Goal";
+            }
+            toggleModal(true);
+        }
+
+        function toggleTask(id) {
+            const isRecurring = id.toString().startsWith('rec_');
+            const dateKey = formatDate(viewingDate);
+
+            if (isRecurring) {
+                if (!completionsLog[id]) completionsLog[id] = [];
+                const index = completionsLog[id].indexOf(dateKey);
+                if (index > -1) completionsLog[id].splice(index, 1);
+                else completionsLog[id].push(dateKey);
+                localStorage.setItem('taskflow_completions', JSON.stringify(completionsLog));
+            } else {
+                tasks = tasks.map(t => t.id == id ? { ...t, completed: !t.completed } : t);
+                localStorage.setItem('taskflow_base', JSON.stringify(tasks));
+            }
+            renderTasks();
+            if (activeView === 'dashboard') renderDashboard();
+        }
+
+        function deleteTask(id) {
+            if (!confirm('Are you sure you want to delete this? This action cannot be undone.')) return;
+
+            const el = document.querySelector(`[data-id="${id}"]`);
+            if (el) el.classList.add('leaving');
+
+            setTimeout(() => {
+                const isRecurring = id.toString().startsWith('rec_');
+                if (isRecurring) {
+                    recurringTasks = recurringTasks.filter(t => t.id != id);
+                    delete completionsLog[id];
+                    localStorage.setItem('taskflow_recurring', JSON.stringify(recurringTasks));
+                    localStorage.setItem('taskflow_completions', JSON.stringify(completionsLog));
+                    if (activeView === 'settings') renderRecurringInSettings();
+                } else {
+                    tasks = tasks.filter(t => t.id != id);
+                    localStorage.setItem('taskflow_base', JSON.stringify(tasks));
+                }
+                renderTasks();
+                if (activeView === 'dashboard') renderDashboard();
+            }, 300);
+        }
+
+        function clearAllData() {
+            if (confirm('Nuke everything? All your data will be permanently erased.')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        function renderTasks() {
+            const curDateStr = formatDate(viewingDate);
+            const curDateObj = new Date(curDateStr);
+
+            const filteredBase = tasks.filter(t => t.targetDate === curDateStr);
+            const filteredRecurring = recurringTasks.filter(rt => {
+                const start = new Date(rt.fromDate);
+                const end = new Date(rt.toDate);
+                return curDateObj >= start && curDateObj <= end;
+            }).map(rt => {
+                const isCompleted = completionsLog[rt.id] && completionsLog[rt.id].includes(curDateStr);
+                return { ...rt, completed: !!isCompleted, isRecurring: true };
+            });
+
+            const combined = [...filteredRecurring, ...filteredBase];
+
+            if (combined.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-24 text-slate-400">
+                        <div class="w-20 h-20 rounded-[2.5rem] bg-slate-900 flex items-center justify-center mb-6 border border-white/5 shadow-xl">
+                            <i class="fas fa-moon text-2xl text-indigo-400 opacity-80"></i>
+                        </div>
+                        <p class="font-black text-xs uppercase tracking-[0.3em] text-slate-500">Rest Cycle</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = combined.map((task) => {
+                const prioStyles = {
+                    low: 'border-slate-800 text-slate-500',
+                    medium: 'border-amber-500/40 text-amber-500',
+                    high: 'border-rose-500/40 text-rose-500'
+                };
+
+                return `
+                    <div data-id="${task.id}" class="task-item glass-card p-5 rounded-[2.5rem] flex items-center gap-4 ${task.completed ? 'opacity-30' : ''}">
+                        <div onclick="toggleTask('${task.id}')" class="w-10 h-10 rounded-2xl border-2 flex items-center justify-center cursor-pointer transition-all ${task.completed ? 'bg-indigo-600 border-indigo-600 scale-90' : 'border-slate-700 bg-slate-950'}">
+                            ${task.completed ? '<i class="fas fa-check text-xs text-white"></i>' : ''}
+                        </div>
+                        <div class="flex-1 min-w-0" onclick="toggleTask('${task.id}')">
+                            <div class="flex-1">
+                                <p class="font-bold text-sm mb-1 ${task.completed ? 'line-through text-slate-500' : 'text-slate-100'}">${task.text}</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[8px] uppercase tracking-widest font-black px-2 py-0.5 rounded-md border ${prioStyles[task.priority]}">${task.priority}</span>
+                                    ${task.isRecurring ? '<span class="text-[8px] uppercase text-indigo-400 font-extrabold flex items-center gap-1"><i class="fas fa-sync-alt text-[7px]"></i>Routine</span>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-1">
+                            ${!task.isRecurring ? `
+                                <button onclick="openEdit(${task.id})" class="w-10 h-10 text-slate-600 hover:text-indigo-400 transition-colors">
+                                    <i class="fas fa-pen-nib text-xs"></i>
+                                </button>
+                                <button onclick="deleteTask('${task.id}')" class="w-10 h-10 text-slate-600 hover:text-rose-500 transition-colors">
+                                    <i class="fas fa-trash-alt text-xs"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderRecurringInSettings() {
+            const rList = document.getElementById('recurring-list');
+            if (recurringTasks.length === 0) {
+                rList.innerHTML = `<p class="text-center py-10 text-slate-700 text-[10px] font-black uppercase tracking-[0.2em]">Zero Routines Active</p>`;
+                return;
+            }
+
+            rList.innerHTML = recurringTasks.map(rt => `
+                <div data-id="${rt.id}" class="glass-card p-5 rounded-[2rem] flex items-center justify-between border border-white/5">
+                    <div class="min-w-0 flex-1 mr-4">
+                        <p class="font-black text-sm text-white truncate">${rt.text}</p>
+                        <p class="text-[9px] text-slate-500 mt-1 uppercase font-bold tracking-widest">
+                            ${new Date(rt.fromDate).toLocaleDateString([], { month: 'short', day: 'numeric' })} &mdash; ${new Date(rt.toDate).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                        </p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openEdit('${rt.id}')" class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                            <i class="fas fa-pen-nib text-xs"></i>
+                        </button>
+                        <button onclick="deleteTask('${rt.id}')" class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Dashboard/Stats logic
+        function changeMonth(dir) {
+            dashboardDate.setMonth(dashboardDate.getMonth() + dir);
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            const monthLabel = dashboardDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            document.getElementById('dash-month-label').textContent = monthLabel;
+
+            const year = dashboardDate.getFullYear();
+            const month = dashboardDate.getMonth();
+            const monthYearStr = `${year}-${String(month + 1).padStart(2, '0')}`;
+
+            // Calculate base task stats
+            const monthBase = tasks.filter(t => t.targetDate && t.targetDate.startsWith(monthYearStr));
+            let baseDone = monthBase.filter(t => t.completed).length;
+
+            // Recurring completions
+            let recDone = 0;
+            Object.keys(completionsLog).forEach(id => {
+                const dates = completionsLog[id];
+                recDone += dates.filter(d => d.startsWith(monthYearStr)).length;
+            });
+
+            const done = baseDone + recDone;
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const grid = document.getElementById('heatmap-grid');
+            grid.innerHTML = '';
+
+            let monthTotal = 0;
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateStr = `${monthYearStr}-${String(i).padStart(2, '0')}`;
+                const dateObj = new Date(dateStr);
+
+                // Normal tasks for this day
+                const dayBase = tasks.filter(t => t.targetDate === dateStr);
+                // Recurring tasks for this day
+                const dayRec = recurringTasks.filter(rt => {
+                    const s = new Date(rt.fromDate);
+                    const e = new Date(rt.toDate);
+                    return dateObj >= s && dateObj <= e;
+                });
+
+                const dayPotential = dayBase.length + dayRec.length;
+                monthTotal += dayPotential;
+
+                const dayDoneBase = dayBase.filter(t => t.completed).length;
+                const dayDoneRec = Object.keys(completionsLog).filter(id => completionsLog[id].includes(dateStr)).length;
+                const dayDoneTotal = dayDoneBase + dayDoneRec;
+
+                const intensity = Math.min(8, dayDoneTotal);
+                grid.innerHTML += `<div class="heatmap-cell level-${intensity}" title="${dateStr}: ${dayDoneTotal}/${dayPotential}">${i}</div>`;
+            }
+
+            document.getElementById('dash-total').textContent = monthTotal;
+            document.getElementById('dash-done').textContent = done;
+            const efficiency = monthTotal === 0 ? 0 : Math.round((done / monthTotal) * 100);
+            document.getElementById('dash-efficiency').textContent = `${efficiency}%`;
+            document.getElementById('dash-progress-bar').style.width = `${efficiency}%`;
+        }
+
+        // Initialization
+        input.addEventListener('input', () => {
+            input.classList.remove('input-error');
+            valError.classList.add('hidden');
+        });
+
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') saveTask(); });
+
+        updateDateUI();
+        renderTasks();
+    </script>
+</body>
+
+</html>

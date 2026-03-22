@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced API Tester</title>
+    <style>
+        :root {
+            /* Theme Variables - Dark Mode Default */
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --surface-hover: #2d2d2d;
+            --border-color: #333333;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+
+            /* Accent Colors */
+            --accent-color: #6366f1;
+            --accent-hover: #4f46e5;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+
+            /* Method Colors */
+            --method-get: #10b981;
+            --method-post: #f59e0b;
+            --method-put: #3b82f6;
+            --method-patch: #8b5cf6;
+            --method-delete: #ef4444;
+
+            --border-radius: 8px;
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 14px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Typography & Inputs */
+        input,
+        select,
+        textarea,
+        button {
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color) !important;
+        }
+
+        .input-base {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .btn {
+            background-color: var(--surface-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background-color: var(--surface-hover);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .btn-icon {
+            padding: 6px;
+            border-radius: 4px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .btn-icon:hover {
+            color: var(--text-primary);
+            background-color: var(--surface-hover);
+        }
+
+        .btn-danger {
+            color: var(--error-color);
+        }
+
+        .btn-danger:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Layout */
+        .sidebar {
+            width: 320px;
+            min-width: 320px;
+            background-color: var(--surface-color);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: var(--bg-color);
+        }
+
+        .pane {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .pane-top {
+            flex: none;
+            height: 45%;
+            display: flex;
+            flex-direction: column;
+            min-height: 150px;
+        }
+
+        .pane-bottom {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 150px;
+        }
+
+        /* Resizer */
+        .resizer {
+            height: 12px;
+            background-color: var(--surface-color);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            cursor: ns-resize;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s;
+            z-index: 5;
+        }
+
+        .resizer:hover,
+        .resizer.dragging {
+            background-color: rgba(99, 102, 241, 0.15);
+        }
+
+        .resizer-handle {
+            width: 40px;
+            height: 3px;
+            background-color: var(--border-color);
+            border-radius: 2px;
+            transition: background-color 0.2s;
+        }
+
+        .resizer:hover .resizer-handle,
+        .resizer.dragging .resizer-handle {
+            background-color: var(--accent-color);
+        }
+
+        /* Sidebar Elements */
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .history-item {
+            padding: 12px;
+            border-radius: var(--border-radius);
+            margin-bottom: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            background-color: var(--bg-color);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .history-item:hover {
+            border-color: var(--border-color);
+            background-color: var(--surface-hover);
+        }
+
+        .history-item-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .history-item:hover .history-actions {
+            opacity: 1;
+        }
+
+        .history-item-bottom {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .method-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .url-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+
+        /* Main Workspace Elements */
+        .request-header {
+            padding: 12px 16px;
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .request-name-input {
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-primary);
+            padding: 4px 8px;
+            flex: 1;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .request-name-input:hover {
+            border-color: var(--border-color);
+        }
+
+        .request-name-input:focus {
+            background-color: var(--bg-color);
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        .url-bar-container {
+            padding: 16px;
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .method-select {
+            width: 110px;
+            font-weight: 600;
+            background-color: var(--bg-color);
+        }
+
+        .url-input {
+            flex: 1;
+            font-size: 16px;
+            padding: 10px 14px;
+        }
+
+        /* Tabs */
+        .tabs-container {
+            display: flex;
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 16px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+        }
+
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Key-Value Editor */
+        .kv-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        /* Prevent checkbox from taking flex space */
+        .kv-row input[type="text"] {
+            flex: 1;
+        }
+
+        .kv-row .kv-check {
+            width: auto;
+            flex: none;
+            margin-right: 4px;
+            cursor: pointer;
+        }
+
+        /* Textarea */
+        .code-editor {
+            flex: 1;
+            width: 100%;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 4px;
+            resize: none;
+            line-height: 1.5;
+        }
+
+        /* Response Section */
+        .response-meta {
+            padding: 12px 16px;
+            background-color: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .meta-item {
+            display: flex;
+            gap: 6px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .meta-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .status-success {
+            color: var(--success-color);
+        }
+
+        .status-error {
+            color: var(--error-color);
+        }
+
+        .status-warning {
+            color: var(--warning-color);
+        }
+
+        .response-body-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #responseBody,
+        #requestSentBody {
+            margin: 0;
+            padding: 16px;
+            flex: 1;
+            overflow: auto;
+            background-color: var(--bg-color);
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Auth Section */
+        .auth-container {
+            max-width: 600px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+        }
+
+        /* Notes / Helpers */
+        .help-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .cors-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning-color);
+            color: var(--warning-color);
+            padding: 12px;
+            border-radius: var(--border-radius);
+            margin-bottom: 16px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Toasts */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 200;
+        }
+
+        .toast {
+            background-color: var(--surface-color);
+            border-left: 4px solid var(--accent-color);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease forwards;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.error {
+            border-left-color: var(--error-color);
+        }
+
+        .toast.success {
+            border-left-color: var(--success-color);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 250px;
+                min-height: 250px;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .request-header {
+                flex-wrap: wrap;
+            }
+
+            .url-bar-container {
+                flex-wrap: wrap;
+            }
+
+            .method-select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar: History & Collections -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Saved Requests</h2>
+            <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="createNewRequest()">+
+                New</button>
+        </div>
+        <div class="history-list" id="historyList">
+            <!-- Dynamic History Items -->
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+        <!-- Request Header (Name & Actions) -->
+        <div class="request-header">
+            <input type="text" id="reqName" class="request-name-input" placeholder="Untitled Request">
+            <div style="display: flex; gap: 8px;">
+                <button class="btn" onclick="executeSaveRequest()">Save</button>
+                <button class="btn btn-icon" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
+            </div>
+        </div>
+
+        <!-- Top URL Bar -->
+        <div class="url-bar-container">
+            <select id="reqMethod" class="input-base method-select" onchange="updateMethodColor(this)">
+                <option value="GET" style="color: var(--method-get)">GET</option>
+                <option value="POST" style="color: var(--method-post)">POST</option>
+                <option value="PUT" style="color: var(--method-put)">PUT</option>
+                <option value="PATCH" style="color: var(--method-patch)">PATCH</option>
+                <option value="DELETE" style="color: var(--method-delete)">DELETE</option>
+                <option value="OPTIONS">OPTIONS</option>
+                <option value="HEAD">HEAD</option>
+            </select>
+            <input type="text" id="reqUrl" class="input-base url-input"
+                placeholder="Enter request URL (e.g., https://api.example.com/v1/users)">
+            <button class="btn btn-primary" onclick="sendRequest()">Send</button>
+        </div>
+
+        <!-- Request Pane -->
+        <div class="pane-top" id="paneTop">
+            <div class="tabs-container">
+                <div class="tab active" onclick="switchReqTab('params')">Query Params</div>
+                <div class="tab" onclick="switchReqTab('headers')">Headers</div>
+                <div class="tab" onclick="switchReqTab('auth')">Authorization</div>
+                <div class="tab" onclick="switchReqTab('body')">Body</div>
+            </div>
+
+            <!-- Params Tab -->
+            <div id="tab-req-params" class="tab-content active">
+                <div id="paramsContainer"></div>
+                <button class="btn" style="align-self: flex-start; margin-top: 8px;"
+                    onclick="addKvRow('paramsContainer')">+ Add Parameter</button>
+            </div>
+
+            <!-- Headers Tab -->
+            <div id="tab-req-headers" class="tab-content">
+                <div id="headersContainer"></div>
+                <button class="btn" style="align-self: flex-start; margin-top: 8px;"
+                    onclick="addKvRow('headersContainer')">+ Add Header</button>
+            </div>
+
+            <!-- Auth Tab -->
+            <div id="tab-req-auth" class="tab-content">
+                <div class="auth-container">
+                    <div class="form-group">
+                        <label for="authType">Auth Type</label>
+                        <select id="authType" class="input-base" onchange="toggleAuthFields()">
+                            <option value="none">No Auth</option>
+                            <option value="bearer">Bearer Token</option>
+                        </select>
+                    </div>
+                    <div id="bearerTokenGroup" class="form-group" style="display: none;">
+                        <label for="authToken">Token</label>
+                        <input type="text" id="authToken" class="input-base" placeholder="Enter Bearer Token">
+                        <div class="help-text">This will automatically add an 'Authorization: Bearer &lt;token&gt;'
+                            header.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Body Tab -->
+            <div id="tab-req-body" class="tab-content">
+                <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    <label style="margin:0;">Content-Type:</label>
+                    <select id="bodyContentType" class="input-base" style="width: auto;">
+                        <option value="none">None</option>
+                        <option value="application/json">JSON</option>
+                        <option value="text/plain">Text</option>
+                        <option value="application/xml">XML</option>
+                        <option value="application/x-www-form-urlencoded">Form URL Encoded</option>
+                    </select>
+                </div>
+                <textarea id="reqBody" class="code-editor" placeholder='{\n  "key": "value"\n}'></textarea>
+            </div>
+        </div>
+
+        <!-- Resizer -->
+        <div class="resizer" id="paneResizer" title="Drag to resize">
+            <div class="resizer-handle"></div>
+        </div>
+
+        <!-- Response Pane -->
+        <div class="pane-bottom" id="paneBottom">
+            <div class="tabs-container">
+                <div class="tab active" onclick="switchResTab('body')">Response Body</div>
+                <div class="tab" onclick="switchResTab('headers')">Response Headers</div>
+                <div class="tab" onclick="switchResTab('request')">Request Payload</div>
+            </div>
+
+            <div class="response-meta">
+                <div class="meta-item">Status: <span id="resStatus" class="meta-value">-</span></div>
+                <div class="meta-item">Time: <span id="resTime" class="meta-value">-</span></div>
+                <div class="meta-item">Size: <span id="resSize" class="meta-value">-</span></div>
+            </div>
+
+            <!-- Response Body Tab -->
+            <div id="tab-res-body" class="tab-content active" style="padding:0;">
+                <pre id="responseBody">Enter a URL and click Send to get a response...</pre>
+            </div>
+
+            <!-- Response Headers Tab -->
+            <div id="tab-res-headers" class="tab-content">
+                <div id="responseHeadersList">No headers to display.</div>
+            </div>
+
+            <!-- Request Payload Tab -->
+            <div id="tab-res-request" class="tab-content" style="padding:0;">
+                <pre id="requestSentBody">No request sent yet.</pre>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        // --- State Management ---
+        const STATE_KEY = 'api_tester_history';
+        const THEME_KEY = 'api_tester_theme';
+        let currentRequestId = null;
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            updateMethodColor(document.getElementById('reqMethod'));
+            loadHistoryUI();
+
+            // Add initial empty rows
+            addKvRow('paramsContainer');
+            addKvRow('headersContainer', 'Accept', '*/*');
+
+            // Initialize resizer
+            initResizer();
+        });
+
+        // --- Resizer Logic ---
+        function initResizer() {
+            const resizer = document.getElementById('paneResizer');
+            const paneTop = document.getElementById('paneTop');
+            let isDragging = false;
+            let startY;
+            let startHeight;
+
+            resizer.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startY = e.clientY;
+                startHeight = paneTop.getBoundingClientRect().height;
+                resizer.classList.add('dragging');
+                document.body.style.cursor = 'ns-resize';
+                e.preventDefault(); // Prevent text selection
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const dy = e.clientY - startY;
+                let newHeight = startHeight + dy;
+
+                // Minimum height constraints
+                if (newHeight < 150) newHeight = 150;
+
+                // Maximum height to prevent hiding the bottom pane entirely
+                const containerHeight = document.querySelector('.main-content').clientHeight;
+                const topBarHeights = document.querySelector('.request-header').clientHeight + document.querySelector('.url-bar-container').clientHeight;
+                const maxAvailable = containerHeight - topBarHeights - 150; // Leave 150px for the response pane
+
+                if (newHeight > maxAvailable) newHeight = maxAvailable;
+
+                paneTop.style.height = `${newHeight}px`;
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    resizer.classList.remove('dragging');
+                    document.body.style.cursor = '';
+                }
+            });
+        }
+
+        // --- UI & Theming Logic ---
+        function initTheme() {
+            const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+            applyTheme(savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            applyTheme(currentTheme);
+            localStorage.setItem(THEME_KEY, currentTheme);
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const root = document.documentElement;
+            if (theme === 'light') {
+                root.style.setProperty('--bg-color', '#f3f4f6');
+                root.style.setProperty('--surface-color', '#ffffff');
+                root.style.setProperty('--surface-hover', '#f9fafb');
+                root.style.setProperty('--border-color', '#e5e7eb');
+                root.style.setProperty('--text-primary', '#111827');
+                root.style.setProperty('--text-secondary', '#6b7280');
+            } else {
+                root.style.setProperty('--bg-color', '#121212');
+                root.style.setProperty('--surface-color', '#1e1e1e');
+                root.style.setProperty('--surface-hover', '#2d2d2d');
+                root.style.setProperty('--border-color', '#333333');
+                root.style.setProperty('--text-primary', '#ffffff');
+                root.style.setProperty('--text-secondary', '#aaaaaa');
+            }
+        }
+
+        function updateMethodColor(selectElem) {
+            const method = selectElem.value.toLowerCase();
+            const colorVar = `var(--method-${method}, var(--text-primary))`;
+            selectElem.style.color = colorVar;
+        }
+
+        // --- Tab Logic ---
+        function switchReqTab(tabName) {
+            document.querySelectorAll('.pane-top .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.pane-top .tab-content').forEach(c => c.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById(`tab-req-${tabName}`).classList.add('active');
+        }
+
+        function switchResTab(tabName) {
+            document.querySelectorAll('.pane-bottom .tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.pane-bottom .tab-content').forEach(c => c.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById(`tab-res-${tabName}`).classList.add('active');
+        }
+
+        function toggleAuthFields() {
+            const type = document.getElementById('authType').value;
+            document.getElementById('bearerTokenGroup').style.display = type === 'bearer' ? 'block' : 'none';
+        }
+
+        // --- Key-Value Editor Logic ---
+        function addKvRow(containerId, defaultKey = '', defaultValue = '') {
+            const container = document.getElementById(containerId);
+            const row = document.createElement('div');
+            row.className = 'kv-row';
+            row.innerHTML = `
+                <input type="checkbox" class="kv-check" checked title="Include in request">
+                <input type="text" class="input-base kv-key" placeholder="Key" value="${defaultKey}">
+                <input type="text" class="input-base kv-value" placeholder="Value" value="${defaultValue}">
+                <button class="btn-icon btn-danger" onclick="this.parentElement.remove()" title="Remove">✖</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function getKvData(containerId) {
+            const data = [];
+            const rows = document.getElementById(containerId).querySelectorAll('.kv-row');
+            rows.forEach(row => {
+                const isActive = row.querySelector('.kv-check').checked;
+                const key = row.querySelector('.kv-key').value.trim();
+                const value = row.querySelector('.kv-value').value;
+                if (key) {
+                    data.push({ key, value, isActive });
+                }
+            });
+            return data;
+        }
+
+        function setKvData(containerId, dataArray) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            if (!dataArray || dataArray.length === 0) {
+                addKvRow(containerId); // Add empty row
+                return;
+            }
+            dataArray.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'kv-row';
+                row.innerHTML = `
+                    <input type="checkbox" class="kv-check" ${item.isActive !== false ? 'checked' : ''} title="Include in request">
+                    <input type="text" class="input-base kv-key" placeholder="Key" value="${item.key || ''}">
+                    <input type="text" class="input-base kv-value" placeholder="Value" value="${item.value || ''}">
+                    <button class="btn-icon btn-danger" onclick="this.parentElement.remove()" title="Remove">✖</button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // --- Request Execution ---
+        async function sendRequest() {
+            let baseUrl = document.getElementById('reqUrl').value.trim();
+            if (!baseUrl) {
+                showToast("Please enter a valid URL", "error");
+                return;
+            }
+
+            // Append http if missing
+            if (!/^https?:\/\//i.test(baseUrl)) {
+                baseUrl = 'https://' + baseUrl;
+                document.getElementById('reqUrl').value = baseUrl;
+            }
+
+            const method = document.getElementById('reqMethod').value;
+
+            // 1. Process Query Params
+            const params = getKvData('paramsContainer').filter(p => p.isActive);
+            let finalUrl = baseUrl;
+            if (params.length > 0) {
+                try {
+                    const urlObj = new URL(baseUrl);
+                    params.forEach(p => urlObj.searchParams.append(p.key, p.value));
+                    finalUrl = urlObj.toString();
+                } catch (e) {
+                    showToast("Invalid URL format", "error");
+                    return;
+                }
+            }
+
+            // 2. Process Headers
+            const headersList = getKvData('headersContainer').filter(h => h.isActive);
+            const headers = new Headers();
+            headersList.forEach(h => headers.append(h.key, h.value));
+
+            // 3. Process Auth
+            const authType = document.getElementById('authType').value;
+            if (authType === 'bearer') {
+                const token = document.getElementById('authToken').value.trim();
+                if (token) headers.set('Authorization', `Bearer ${token}`);
+            }
+
+            // 4. Process Body
+            let body = null;
+            const hasBody = !['GET', 'HEAD', 'OPTIONS'].includes(method);
+            if (hasBody) {
+                body = document.getElementById('reqBody').value;
+                const contentType = document.getElementById('bodyContentType').value;
+                if (contentType !== 'none') {
+                    headers.set('Content-Type', contentType);
+                }
+            }
+
+            // 5. Setup UI for Loading
+            const resBodyEl = document.getElementById('responseBody');
+            const resStatusEl = document.getElementById('resStatus');
+            const resTimeEl = document.getElementById('resTime');
+            const resSizeEl = document.getElementById('resSize');
+            const resHeadersEl = document.getElementById('responseHeadersList');
+            const reqSentEl = document.getElementById('requestSentBody');
+
+            resBodyEl.textContent = "Sending request...\nWaiting for response...";
+            resStatusEl.textContent = "-";
+            resStatusEl.className = "meta-value";
+            resTimeEl.textContent = "-";
+            resSizeEl.textContent = "-";
+            resHeadersEl.innerHTML = "";
+
+            // Populate Request Payload Tab
+            let requestLog = `${method} ${finalUrl}\n`;
+            headers.forEach((value, key) => {
+                requestLog += `${key}: ${value}\n`;
+            });
+            if (hasBody && body) {
+                requestLog += `\n${body}`;
+            }
+            reqSentEl.textContent = requestLog;
+
+            // 6. Fetch
+            const startTime = performance.now();
+            try {
+                const response = await fetch(finalUrl, {
+                    method,
+                    headers,
+                    body: hasBody ? body : undefined,
+                    mode: 'cors'
+                });
+
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+                resTimeEl.textContent = `${duration} ms`;
+
+                // Status
+                resStatusEl.textContent = `${response.status} ${response.statusText}`;
+                if (response.status >= 200 && response.status < 300) resStatusEl.className = "meta-value status-success";
+                else if (response.status >= 400) resStatusEl.className = "meta-value status-error";
+                else resStatusEl.className = "meta-value status-warning";
+
+                // Headers processing
+                let resHeadersHtml = '<div style="display:grid; grid-template-columns: auto 1fr; gap: 8px 16px;">';
+                response.headers.forEach((value, key) => {
+                    resHeadersHtml += `<strong style="color:var(--accent-color)">${key}:</strong> <span>${value}</span>`;
+                });
+                resHeadersHtml += '</div>';
+                resHeadersEl.innerHTML = resHeadersHtml || 'No headers returned.';
+
+                // Body processing
+                const responseType = response.headers.get("content-type") || "";
+                let responseData;
+
+                if (responseType.includes("application/json")) {
+                    const json = await response.json();
+                    responseData = JSON.stringify(json, null, 2);
+                    resBodyEl.textContent = responseData;
+                } else {
+                    responseData = await response.text();
+                    resBodyEl.textContent = responseData;
+                }
+
+                // Calculate rough size
+                const sizeBytes = new Blob([responseData]).size;
+                resSizeEl.textContent = formatBytes(sizeBytes);
+
+            } catch (error) {
+                const endTime = performance.now();
+                resTimeEl.textContent = `${Math.round(endTime - startTime)} ms`;
+                resStatusEl.textContent = "Network Error";
+                resStatusEl.className = "meta-value status-error";
+
+                resBodyEl.innerHTML = `
+                    <div class="cors-warning">
+                        <strong>⚠️ Request Failed</strong>
+                    </div>
+                    This usually happens due to one of the following reasons:
+                    1. <strong>CORS Policy:</strong> The server blocks cross-origin requests from browsers.
+                    2. <strong>Network Offline:</strong> Check your internet connection.
+                    3. <strong>Invalid URL:</strong> Ensure the server is running and the URL is reachable.
+                    
+                    <em>Error Details: ${error.message}</em>
+                `;
+                showToast("Request failed", "error");
+            }
+        }
+
+        // --- LocalStorage History Logic ---
+        function getHistory() {
+            return JSON.parse(localStorage.getItem(STATE_KEY) || '[]');
+        }
+
+        function saveToHistory(requestData) {
+            let history = getHistory();
+            if (currentRequestId) {
+                // Update existing
+                const index = history.findIndex(h => h.id === currentRequestId);
+                if (index !== -1) history[index] = requestData;
+                else history.unshift(requestData);
+            } else {
+                // Add new
+                history.unshift(requestData);
+                currentRequestId = requestData.id;
+            }
+            localStorage.setItem(STATE_KEY, JSON.stringify(history));
+            loadHistoryUI();
+            showToast("Request saved successfully", "success");
+        }
+
+        function createNewRequest() {
+            currentRequestId = null;
+            document.getElementById('reqName').value = '';
+            document.getElementById('reqMethod').value = 'GET';
+            updateMethodColor(document.getElementById('reqMethod'));
+            document.getElementById('reqUrl').value = '';
+
+            setKvData('paramsContainer', []);
+            setKvData('headersContainer', [{ key: 'Accept', value: '*/*', isActive: true }]);
+
+            document.getElementById('authType').value = 'none';
+            document.getElementById('authToken').value = '';
+            toggleAuthFields();
+
+            document.getElementById('bodyContentType').value = 'none';
+            document.getElementById('reqBody').value = '';
+
+            // Clear response
+            document.getElementById('responseBody').textContent = 'Enter a URL and click Send to get a response...';
+            document.getElementById('requestSentBody').textContent = 'No request sent yet.';
+            document.getElementById('resStatus').textContent = '-';
+            document.getElementById('resTime').textContent = '-';
+            document.getElementById('resSize').textContent = '-';
+            document.getElementById('resStatus').className = 'meta-value';
+        }
+
+        function loadHistoryItem(id) {
+            const history = getHistory();
+            const item = history.find(h => h.id === id);
+            if (!item) return;
+
+            currentRequestId = item.id;
+            document.getElementById('reqName').value = (item.name && item.name !== 'Untitled Request') ? item.name : '';
+            document.getElementById('reqMethod').value = item.method || 'GET';
+            updateMethodColor(document.getElementById('reqMethod'));
+            document.getElementById('reqUrl').value = item.url || '';
+
+            setKvData('paramsContainer', item.params);
+            setKvData('headersContainer', item.headers);
+
+            document.getElementById('authType').value = item.authType || 'none';
+            document.getElementById('authToken').value = item.token || '';
+            toggleAuthFields();
+
+            document.getElementById('bodyContentType').value = item.contentType || 'none';
+            document.getElementById('reqBody').value = item.body || '';
+        }
+
+        function deleteHistoryItem(event, id) {
+            event.stopPropagation();
+            let history = getHistory();
+            history = history.filter(h => h.id !== id);
+            localStorage.setItem(STATE_KEY, JSON.stringify(history));
+            if (currentRequestId === id) createNewRequest();
+            loadHistoryUI();
+            showToast("Request deleted", "success");
+        }
+
+        function loadHistoryUI() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            const history = getHistory();
+
+            if (history.length === 0) {
+                historyList.innerHTML = '<div style="color:var(--text-secondary); padding: 10px; text-align:center;">No saved requests.</div>';
+                return;
+            }
+
+            history.forEach(item => {
+                const methodColor = `var(--method-${(item.method || 'GET').toLowerCase()}, var(--text-primary))`;
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.onclick = () => loadHistoryItem(item.id);
+                div.innerHTML = `
+                    <div class="history-item-top">
+                        <span class="history-name" title="${item.name || 'Untitled Request'}">${item.name || 'Untitled Request'}</span>
+                        <div class="history-actions">
+                            <button class="btn-icon btn-danger" style="padding: 2px;" onclick="deleteHistoryItem(event, '${item.id}')" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="history-item-bottom">
+                        <span class="method-badge" style="color: ${methodColor}; border: 1px solid ${methodColor}">${item.method}</span>
+                        <span class="url-text" title="${item.url}">${item.url}</span>
+                    </div>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+
+        function executeSaveRequest() {
+            if (!document.getElementById('reqUrl').value.trim()) {
+                showToast("Please enter a URL before saving", "warning");
+                return;
+            }
+
+            const name = document.getElementById('reqName').value.trim() || 'Untitled Request';
+
+            const requestData = {
+                id: currentRequestId || Date.now().toString(),
+                name: name,
+                method: document.getElementById('reqMethod').value,
+                url: document.getElementById('reqUrl').value,
+                params: getKvData('paramsContainer'),
+                headers: getKvData('headersContainer'),
+                authType: document.getElementById('authType').value,
+                token: document.getElementById('authToken').value,
+                contentType: document.getElementById('bodyContentType').value,
+                body: document.getElementById('reqBody').value,
+                timestamp: Date.now()
+            };
+
+            saveToHistory(requestData);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            let icon = 'ℹ️';
+            if (type === 'success') icon = '✅';
+            if (type === 'error') icon = '❌';
+            if (type === 'warning') icon = '⚠️';
+
+            toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+            container.appendChild(toast);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // --- Utils ---
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+
+    </script>
+</body>
+
+</html>

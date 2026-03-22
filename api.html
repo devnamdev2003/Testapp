@@ -234,6 +234,18 @@
             margin: 0;
         }
 
+        .sidebar-search {
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--surface-color);
+        }
+
+        .sidebar-search input {
+            width: 100%;
+            background-color: var(--bg-color);
+            padding: 6px 10px;
+        }
+
         .history-list {
             flex: 1;
             overflow-y: auto;
@@ -571,7 +583,7 @@
         #requestSentBody {
             margin: 0;
             padding: 40px 16px 16px 16px;
-            /* Extra top padding for copy button */
+            /* Extra top padding for buttons */
             flex: 1;
             overflow: auto;
             background-color: var(--bg-color);
@@ -580,18 +592,30 @@
             word-wrap: break-word;
         }
 
-        .copy-btn {
+        .action-buttons-overlay {
             position: absolute;
             top: 10px;
             right: 16px;
-            font-size: 12px;
-            padding: 4px 10px;
-            opacity: 0.8;
+            display: flex;
+            gap: 8px;
             z-index: 10;
         }
 
-        .copy-btn:hover {
+        .action-btn {
+            font-size: 12px;
+            padding: 4px 10px;
+            opacity: 0.8;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
             opacity: 1;
+            background-color: var(--surface-hover);
         }
 
         /* Auth Section */
@@ -632,6 +656,14 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        /* Image preview */
+        .response-image {
+            max-width: 100%;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            margin-top: 10px;
         }
 
         /* Toasts */
@@ -726,6 +758,10 @@
                     onclick="createNewRequest()">+ New</button>
             </div>
         </div>
+        <div class="sidebar-search">
+            <input type="text" id="searchInput" class="input-base" placeholder="Search requests..."
+                onkeyup="filterHistory()">
+        </div>
         <div class="history-list" id="historyList">
             <!-- Dynamic History Items -->
         </div>
@@ -744,7 +780,8 @@
                     title="Request Name">
             </div>
             <div style="display: flex; gap: 8px;">
-                <button class="btn" onclick="executeSaveRequest()">Save</button>
+                <button class="btn" onclick="duplicateRequest()" title="Duplicate this request">Clone</button>
+                <button class="btn btn-primary" onclick="executeSaveRequest()">Save</button>
                 <button class="btn btn-icon" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
             </div>
         </div>
@@ -809,15 +846,19 @@
 
             <!-- Body Tab -->
             <div id="tab-req-body" class="tab-content">
-                <div class="form-group" style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                    <label style="margin:0;">Content-Type:</label>
-                    <select id="bodyContentType" class="input-base" style="width: auto;">
-                        <option value="none">None</option>
-                        <option value="application/json">JSON</option>
-                        <option value="text/plain">Text</option>
-                        <option value="application/xml">XML</option>
-                        <option value="application/x-www-form-urlencoded">Form URL Encoded</option>
-                    </select>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div class="form-group" style="margin: 0; display: flex; gap: 10px; align-items: center;">
+                        <label style="margin:0;">Content-Type:</label>
+                        <select id="bodyContentType" class="input-base" style="width: auto;">
+                            <option value="none">None</option>
+                            <option value="application/json">JSON</option>
+                            <option value="text/plain">Text</option>
+                            <option value="application/xml">XML</option>
+                            <option value="application/x-www-form-urlencoded">Form URL Encoded</option>
+                        </select>
+                    </div>
+                    <button class="btn" style="padding: 4px 10px; font-size: 12px;" onclick="formatRequestBody()">Format
+                        JSON</button>
                 </div>
                 <textarea id="reqBody" class="code-editor" placeholder='{\n  "key": "value"\n}'></textarea>
             </div>
@@ -844,8 +885,12 @@
 
             <!-- Response Body Tab -->
             <div id="tab-res-body" class="tab-content active" style="padding:0; position:relative;">
-                <button class="btn copy-btn" onclick="copyResponseText()">Copy</button>
-                <pre id="responseBody">Enter a URL and click Send to get a response...</pre>
+                <div class="action-buttons-overlay">
+                    <button class="action-btn" onclick="downloadResponse()"
+                        title="Save response to file">Download</button>
+                    <button class="action-btn" onclick="copyResponseText()">Copy</button>
+                </div>
+                <div id="responseBody">Enter a URL and click Send to get a response...</div>
             </div>
 
             <!-- Response Headers Tab -->
@@ -854,7 +899,10 @@
             </div>
 
             <!-- Request Payload Tab -->
-            <div id="tab-res-request" class="tab-content" style="padding:0;">
+            <div id="tab-res-request" class="tab-content" style="padding:0; position:relative;">
+                <div class="action-buttons-overlay">
+                    <button class="action-btn" onclick="copyRequestPayload()">Copy</button>
+                </div>
                 <pre id="requestSentBody">No request sent yet.</pre>
             </div>
         </div>
@@ -869,6 +917,8 @@
         const STATE_KEY = 'api_tester_history';
         const THEME_KEY = 'api_tester_theme';
         let currentRequestId = null;
+        let lastResponseData = null; // Store raw response for downloading
+        let lastResponseContentType = null;
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -884,6 +934,35 @@
             initResizer();
             initUrlSync();
         });
+
+        // --- Filter History Logic ---
+        function filterHistory() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const collections = document.querySelectorAll('.collection-group');
+
+            collections.forEach(group => {
+                const items = group.querySelectorAll('.history-item');
+                let groupHasMatch = false;
+
+                items.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        item.style.display = 'flex';
+                        groupHasMatch = true;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                // Open collection and show/hide based on if it has matching children
+                if (groupHasMatch || query === '') {
+                    group.style.display = 'block';
+                    if (query !== '') group.classList.add('open'); // Auto open if searching
+                } else {
+                    group.style.display = 'none';
+                }
+            });
+        }
 
         // --- URL <-> Query Params Sync ---
         function initUrlSync() {
@@ -925,6 +1004,21 @@
                 urlInput.value = baseUrl + '?' + searchParams.toString();
             } else {
                 urlInput.value = baseUrl;
+            }
+        }
+
+        // --- Formatting ---
+        function formatRequestBody() {
+            const bodyEditor = document.getElementById('reqBody');
+            const val = bodyEditor.value.trim();
+            if (!val) return;
+
+            try {
+                const parsed = JSON.parse(val);
+                bodyEditor.value = JSON.stringify(parsed, null, 2);
+                showToast("JSON Formatted", "success");
+            } catch (e) {
+                showToast("Invalid JSON: Cannot format", "error");
             }
         }
 
@@ -1113,14 +1207,14 @@
             });
         }
 
+        // --- Clipboard & Download Helpers ---
         function copyResponseText() {
-            const text = document.getElementById('responseBody').textContent;
+            const text = document.getElementById('responseBody').innerText;
             if (!text || text.includes('Waiting for response...')) return;
 
             navigator.clipboard.writeText(text).then(() => {
                 showToast("Copied to clipboard", "success");
             }).catch(() => {
-                // Fallback for older browsers
                 const textArea = document.createElement("textarea");
                 textArea.value = text;
                 document.body.appendChild(textArea);
@@ -1133,6 +1227,46 @@
                 }
                 document.body.removeChild(textArea);
             });
+        }
+
+        function copyRequestPayload() {
+            const text = document.getElementById('requestSentBody').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Copied request details", "success");
+            });
+        }
+
+        function downloadResponse() {
+            if (!lastResponseData) {
+                showToast("No response data to download", "warning");
+                return;
+            }
+
+            let blob;
+            let ext = 'txt';
+
+            // Check if it's binary or text
+            if (lastResponseData instanceof Blob) {
+                blob = lastResponseData;
+                if (lastResponseContentType.includes('image/png')) ext = 'png';
+                else if (lastResponseContentType.includes('image/jpeg')) ext = 'jpg';
+                else if (lastResponseContentType.includes('application/pdf')) ext = 'pdf';
+                else ext = 'bin';
+            } else {
+                blob = new Blob([lastResponseData], { type: lastResponseContentType || 'text/plain' });
+                if (lastResponseContentType.includes('application/json')) ext = 'json';
+                else if (lastResponseContentType.includes('application/xml') || lastResponseContentType.includes('text/xml')) ext = 'xml';
+                else if (lastResponseContentType.includes('text/html')) ext = 'html';
+            }
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `response_${Date.now()}.${ext}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         // --- Request Execution ---
@@ -1150,7 +1284,7 @@
             }
 
             const method = document.getElementById('reqMethod').value;
-            const finalUrl = baseUrl; // Query params are now kept in sync with the URL input natively
+            const finalUrl = baseUrl;
 
             // 1. Process Headers
             const headersList = getKvData('headersContainer').filter(h => h.isActive);
@@ -1183,12 +1317,14 @@
             const resHeadersEl = document.getElementById('responseHeadersList');
             const reqSentEl = document.getElementById('requestSentBody');
 
-            resBodyEl.textContent = "Sending request...\nWaiting for response...";
+            resBodyEl.innerHTML = "<pre>Sending request...\nWaiting for response...</pre>";
             resStatusEl.textContent = "-";
             resStatusEl.className = "meta-value";
             resTimeEl.textContent = "-";
             resSizeEl.textContent = "-";
             resHeadersEl.innerHTML = "";
+            lastResponseData = null;
+            lastResponseContentType = null;
 
             // Populate Request Payload Tab
             let requestLog = `${method} ${finalUrl}\n`;
@@ -1226,22 +1362,35 @@
 
                 // Body processing
                 const responseType = response.headers.get("content-type") || "";
-                let responseData = await response.text(); // Read as text first to avoid crashes on empty JSON bodies
+                lastResponseContentType = responseType;
 
-                if (responseType.includes("application/json") && responseData.trim().length > 0) {
-                    try {
-                        const json = JSON.parse(responseData);
-                        resBodyEl.textContent = JSON.stringify(json, null, 2);
-                    } catch (e) {
-                        resBodyEl.textContent = responseData; // Fallback to raw text if parsing fails
-                    }
+                if (responseType.includes("image/")) {
+                    // Handle Images explicitly
+                    const blob = await response.blob();
+                    lastResponseData = blob;
+                    resSizeEl.textContent = formatBytes(blob.size);
+
+                    const imgUrl = URL.createObjectURL(blob);
+                    resBodyEl.innerHTML = `<img src="${imgUrl}" class="response-image" alt="Response Image">`;
                 } else {
-                    resBodyEl.textContent = responseData;
-                }
+                    // Handle Text / JSON
+                    let responseData = await response.text();
+                    lastResponseData = responseData;
+                    resSizeEl.textContent = formatBytes(new Blob([responseData]).size);
 
-                // Calculate rough size
-                const sizeBytes = new Blob([responseData]).size;
-                resSizeEl.textContent = formatBytes(sizeBytes);
+                    if (responseType.includes("application/json") && responseData.trim().length > 0) {
+                        try {
+                            const json = JSON.parse(responseData);
+                            resBodyEl.innerHTML = `<pre>${JSON.stringify(json, null, 2)}</pre>`;
+                        } catch (e) {
+                            resBodyEl.innerHTML = `<pre>${responseData}</pre>`; // Fallback to raw text
+                        }
+                    } else {
+                        // Prevent HTML injection from APIs returning HTML text
+                        const escapedText = responseData.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        resBodyEl.innerHTML = `<pre>${escapedText}</pre>`;
+                    }
+                }
 
             } catch (error) {
                 const endTime = performance.now();
@@ -1254,12 +1403,12 @@
                     <div class="cors-warning">
                         <strong>⚠️ Request Failed</strong>
                     </div>
-                    This usually happens due to one of the following reasons:
-                    1. <strong>CORS Policy:</strong> The server blocks cross-origin requests from browsers.
-                    2. <strong>Network Offline:</strong> Check your internet connection.
-                    3. <strong>Invalid URL:</strong> Ensure the server is running and the URL is reachable.
-                    
-                    <em>Error Details: ${error.message}</em>
+                    <pre>This usually happens due to one of the following reasons:
+1. <strong>CORS Policy:</strong> The server blocks cross-origin requests from browsers.
+2. <strong>Network Offline:</strong> Check your internet connection.
+3. <strong>Invalid URL:</strong> Ensure the server is running and the URL is reachable.
+
+<em>Error Details: ${error.message}</em></pre>
                 `;
                 showToast("Request failed", "error");
             }
@@ -1304,7 +1453,7 @@
             document.getElementById('reqBody').value = '';
 
             // Clear response
-            document.getElementById('responseBody').textContent = 'Enter a URL and click Send to get a response...';
+            document.getElementById('responseBody').innerHTML = '<pre>Enter a URL and click Send to get a response...</pre>';
             document.getElementById('requestSentBody').textContent = 'No request sent yet.';
             document.getElementById('resStatus').textContent = '-';
             document.getElementById('resTime').textContent = '-';
@@ -1312,11 +1461,22 @@
             document.getElementById('resStatus').className = 'meta-value';
         }
 
+        function duplicateRequest() {
+            currentRequestId = null;
+            const currentName = document.getElementById('reqName').value;
+            if (currentName) {
+                document.getElementById('reqName').value = currentName + ' (Copy)';
+            }
+            showToast("Ready to save as a new clone", "info");
+        }
+
         function clearAllHistory() {
-            localStorage.removeItem(STATE_KEY);
-            createNewRequest();
-            loadHistoryUI();
-            showToast("History cleared", "info");
+            if (confirm("Are you sure you want to delete all saved requests?")) {
+                localStorage.removeItem(STATE_KEY);
+                createNewRequest();
+                loadHistoryUI();
+                showToast("History cleared", "info");
+            }
         }
 
         function loadHistoryItem(id) {
@@ -1370,11 +1530,18 @@
                 collections[colName].push(item);
             });
 
+            // Sort collections alphabetically (Uncategorized at bottom)
+            const sortedColNames = Object.keys(collections).sort((a, b) => {
+                if (a === 'Uncategorized') return 1;
+                if (b === 'Uncategorized') return -1;
+                return a.localeCompare(b);
+            });
+
             // Render Collections
-            let colIndex = 0;
-            for (const [colName, items] of Object.entries(collections)) {
+            sortedColNames.forEach(colName => {
+                const items = collections[colName];
                 const groupDiv = document.createElement('div');
-                groupDiv.className = 'collection-group open'; // Default all to open
+                groupDiv.className = 'collection-group open';
 
                 const header = document.createElement('div');
                 header.className = 'collection-header';
@@ -1411,7 +1578,10 @@
                 groupDiv.appendChild(header);
                 groupDiv.appendChild(itemsDiv);
                 historyList.appendChild(groupDiv);
-            }
+            });
+
+            // Re-apply filter if search input is not empty
+            filterHistory();
         }
 
         function executeSaveRequest() {

@@ -240,10 +240,56 @@
             padding: 8px;
         }
 
+        /* Collections in Sidebar */
+        .collection-group {
+            margin-bottom: 4px;
+        }
+
+        .collection-header {
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 4px;
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .collection-header:hover {
+            background-color: var(--surface-hover);
+            color: var(--text-primary);
+        }
+
+        .collection-items {
+            display: none;
+            padding-left: 8px;
+            margin-top: 4px;
+            border-left: 1px dashed var(--border-color);
+            margin-left: 16px;
+        }
+
+        .collection-group.open .collection-items {
+            display: block;
+        }
+
+        .folder-icon {
+            font-size: 12px;
+            transition: transform 0.2s;
+            display: inline-block;
+        }
+
+        .collection-group.open .folder-icon {
+            transform: rotate(90deg);
+        }
+
         .history-item {
-            padding: 12px;
+            padding: 10px;
             border-radius: var(--border-radius);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             cursor: pointer;
             border: 1px solid transparent;
             background-color: var(--bg-color);
@@ -317,26 +363,57 @@
             gap: 16px;
         }
 
-        .request-name-input {
-            font-size: 1.25rem;
-            font-weight: 600;
-            background: transparent;
-            border: 1px solid transparent;
-            color: var(--text-primary);
-            padding: 4px 8px;
+        .request-name-container {
+            display: flex;
             flex: 1;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--bg-color);
+            border: 1px solid transparent;
             border-radius: 4px;
+            padding: 2px;
             transition: var(--transition);
         }
 
-        .request-name-input:hover {
-            border-color: var(--border-color);
+        .request-name-container:focus-within {
+            border-color: var(--accent-color);
+        }
+
+        .request-collection-input,
+        .request-name-input {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            padding: 6px 8px;
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .request-collection-input {
+            width: 150px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .request-collection-input:focus {
+            color: var(--text-primary);
+            background-color: var(--surface-hover);
+        }
+
+        .request-name-input {
+            font-size: 1.15rem;
+            font-weight: 600;
+            flex: 1;
         }
 
         .request-name-input:focus {
-            background-color: var(--bg-color);
-            border-color: var(--accent-color);
-            outline: none;
+            background-color: var(--surface-hover);
+        }
+
+        .header-divider {
+            color: var(--border-color);
+            font-size: 1.2rem;
+            user-select: none;
         }
 
         .url-bar-container {
@@ -641,7 +718,7 @@
     <!-- Sidebar: History & Collections -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>Saved Requests</h2>
+            <h2>Collections</h2>
             <div style="display: flex; gap: 4px;">
                 <button class="btn btn-icon btn-danger" onclick="clearAllHistory()"
                     title="Clear All History">🗑️</button>
@@ -659,7 +736,13 @@
 
         <!-- Request Header (Name & Actions) -->
         <div class="request-header">
-            <input type="text" id="reqName" class="request-name-input" placeholder="Untitled Request">
+            <div class="request-name-container">
+                <input type="text" id="reqCollection" class="request-collection-input"
+                    placeholder="Collection (Optional)" title="Folder/Collection Name">
+                <span class="header-divider">/</span>
+                <input type="text" id="reqName" class="request-name-input" placeholder="Untitled Request"
+                    title="Request Name">
+            </div>
             <div style="display: flex; gap: 8px;">
                 <button class="btn" onclick="executeSaveRequest()">Save</button>
                 <button class="btn btn-icon" onclick="toggleTheme()" title="Toggle Theme">🌓</button>
@@ -1204,6 +1287,7 @@
 
         function createNewRequest() {
             currentRequestId = null;
+            document.getElementById('reqCollection').value = '';
             document.getElementById('reqName').value = '';
             document.getElementById('reqMethod').value = 'GET';
             updateMethodColor(document.getElementById('reqMethod'));
@@ -1241,6 +1325,7 @@
             if (!item) return;
 
             currentRequestId = item.id;
+            document.getElementById('reqCollection').value = item.collection || '';
             document.getElementById('reqName').value = (item.name && item.name !== 'Untitled Request') ? item.name : '';
             document.getElementById('reqMethod').value = item.method || 'GET';
             updateMethodColor(document.getElementById('reqMethod'));
@@ -1277,25 +1362,56 @@
                 return;
             }
 
+            // Group history items by collection
+            const collections = {};
             history.forEach(item => {
-                const methodColor = `var(--method-${(item.method || 'GET').toLowerCase()}, var(--text-primary))`;
-                const div = document.createElement('div');
-                div.className = 'history-item';
-                div.onclick = () => loadHistoryItem(item.id);
-                div.innerHTML = `
-                    <div class="history-item-top">
-                        <span class="history-name" title="${item.name || 'Untitled Request'}">${item.name || 'Untitled Request'}</span>
-                        <div class="history-actions">
-                            <button class="btn-icon btn-danger" style="padding: 2px;" onclick="deleteHistoryItem(event, '${item.id}')" title="Delete">🗑️</button>
-                        </div>
-                    </div>
-                    <div class="history-item-bottom">
-                        <span class="method-badge" style="color: ${methodColor}; border: 1px solid ${methodColor}">${item.method}</span>
-                        <span class="url-text" title="${item.url}">${item.url}</span>
-                    </div>
-                `;
-                historyList.appendChild(div);
+                const colName = item.collection && item.collection.trim() !== '' ? item.collection.trim() : 'Uncategorized';
+                if (!collections[colName]) collections[colName] = [];
+                collections[colName].push(item);
             });
+
+            // Render Collections
+            let colIndex = 0;
+            for (const [colName, items] of Object.entries(collections)) {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'collection-group open'; // Default all to open
+
+                const header = document.createElement('div');
+                header.className = 'collection-header';
+                header.onclick = () => groupDiv.classList.toggle('open');
+                header.innerHTML = `
+                    <span class="folder-icon">▶</span> 
+                    <span>${colName}</span> 
+                    <span style="font-size:11px; opacity:0.5; margin-left:auto;">${items.length} items</span>
+                `;
+
+                const itemsDiv = document.createElement('div');
+                itemsDiv.className = 'collection-items';
+
+                items.forEach(item => {
+                    const methodColor = `var(--method-${(item.method || 'GET').toLowerCase()}, var(--text-primary))`;
+                    const div = document.createElement('div');
+                    div.className = 'history-item';
+                    div.onclick = () => loadHistoryItem(item.id);
+                    div.innerHTML = `
+                        <div class="history-item-top">
+                            <span class="history-name" title="${item.name || 'Untitled Request'}">${item.name || 'Untitled Request'}</span>
+                            <div class="history-actions">
+                                <button class="btn-icon btn-danger" style="padding: 2px;" onclick="deleteHistoryItem(event, '${item.id}')" title="Delete">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="history-item-bottom">
+                            <span class="method-badge" style="color: ${methodColor}; border: 1px solid ${methodColor}">${item.method}</span>
+                            <span class="url-text" title="${item.url}">${item.url}</span>
+                        </div>
+                    `;
+                    itemsDiv.appendChild(div);
+                });
+
+                groupDiv.appendChild(header);
+                groupDiv.appendChild(itemsDiv);
+                historyList.appendChild(groupDiv);
+            }
         }
 
         function executeSaveRequest() {
@@ -1305,10 +1421,12 @@
             }
 
             const name = document.getElementById('reqName').value.trim() || 'Untitled Request';
+            const collection = document.getElementById('reqCollection').value.trim();
 
             const requestData = {
                 id: currentRequestId || Date.now().toString(),
                 name: name,
+                collection: collection,
                 method: document.getElementById('reqMethod').value,
                 url: document.getElementById('reqUrl').value,
                 params: getKvData('paramsContainer'),

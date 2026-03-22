@@ -184,6 +184,7 @@
             display: flex;
             flex-direction: column;
             min-height: 150px;
+            position: relative;
         }
 
         /* Resizer */
@@ -230,6 +231,7 @@
         .sidebar-header h2 {
             font-size: 16px;
             font-weight: 600;
+            margin: 0;
         }
 
         .history-list {
@@ -446,6 +448,7 @@
             gap: 6px;
             color: var(--text-secondary);
             font-size: 13px;
+            align-items: center;
         }
 
         .meta-value {
@@ -453,16 +456,30 @@
             color: var(--text-primary);
         }
 
+        /* Status Badges */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
         .status-success {
+            background-color: rgba(16, 185, 129, 0.15);
             color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
         .status-error {
+            background-color: rgba(239, 68, 68, 0.15);
             color: var(--error-color);
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
         .status-warning {
+            background-color: rgba(245, 158, 11, 0.15);
             color: var(--warning-color);
+            border: 1px solid rgba(245, 158, 11, 0.3);
         }
 
         .response-body-container {
@@ -476,13 +493,28 @@
         #responseBody,
         #requestSentBody {
             margin: 0;
-            padding: 16px;
+            padding: 40px 16px 16px 16px;
+            /* Extra top padding for copy button */
             flex: 1;
             overflow: auto;
             background-color: var(--bg-color);
             font-family: 'Courier New', Courier, monospace;
             white-space: pre-wrap;
             word-wrap: break-word;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 16px;
+            font-size: 12px;
+            padding: 4px 10px;
+            opacity: 0.8;
+            z-index: 10;
+        }
+
+        .copy-btn:hover {
+            opacity: 1;
         }
 
         /* Auth Section */
@@ -610,8 +642,12 @@
     <div class="sidebar">
         <div class="sidebar-header">
             <h2>Saved Requests</h2>
-            <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="createNewRequest()">+
-                New</button>
+            <div style="display: flex; gap: 4px;">
+                <button class="btn btn-icon btn-danger" onclick="clearAllHistory()"
+                    title="Clear All History">🗑️</button>
+                <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;"
+                    onclick="createNewRequest()">+ New</button>
+            </div>
         </div>
         <div class="history-list" id="historyList">
             <!-- Dynamic History Items -->
@@ -659,7 +695,7 @@
             <div id="tab-req-params" class="tab-content active">
                 <div id="paramsContainer"></div>
                 <button class="btn" style="align-self: flex-start; margin-top: 8px;"
-                    onclick="addKvRow('paramsContainer')">+ Add Parameter</button>
+                    onclick="addKvRow('paramsContainer', '', '', true)">+ Add Parameter</button>
             </div>
 
             <!-- Headers Tab -->
@@ -724,7 +760,8 @@
             </div>
 
             <!-- Response Body Tab -->
-            <div id="tab-res-body" class="tab-content active" style="padding:0;">
+            <div id="tab-res-body" class="tab-content active" style="padding:0; position:relative;">
+                <button class="btn copy-btn" onclick="copyResponseText()">Copy</button>
                 <pre id="responseBody">Enter a URL and click Send to get a response...</pre>
             </div>
 
@@ -757,12 +794,56 @@
             loadHistoryUI();
 
             // Add initial empty rows
-            addKvRow('paramsContainer');
+            addKvRow('paramsContainer', '', '', true);
             addKvRow('headersContainer', 'Accept', '*/*');
 
-            // Initialize resizer
+            // Initialize resizer & URL sync listeners
             initResizer();
+            initUrlSync();
         });
+
+        // --- URL <-> Query Params Sync ---
+        function initUrlSync() {
+            const urlInput = document.getElementById('reqUrl');
+
+            // Listen to manual URL typing to update Params Editor
+            urlInput.addEventListener('input', (e) => {
+                const urlStr = e.target.value;
+                if (urlStr.includes('?')) {
+                    try {
+                        // Dummy protocol to force URL class to parse properly
+                        const parseUrl = urlStr.startsWith('http') ? urlStr : 'http://' + urlStr;
+                        const urlObj = new URL(parseUrl);
+                        const paramsArr = [];
+                        for (const [key, value] of urlObj.searchParams.entries()) {
+                            paramsArr.push({ key, value, isActive: true });
+                        }
+                        // Update table silently without triggering loop
+                        setKvDataSilent('paramsContainer', paramsArr);
+                    } catch (err) { }
+                } else {
+                    // Clear params if no ? exists
+                    setKvDataSilent('paramsContainer', []);
+                }
+            });
+        }
+
+        function updateUrlFromParams() {
+            const urlInput = document.getElementById('reqUrl');
+            let urlVal = urlInput.value;
+            if (!urlVal) return;
+
+            const baseUrl = urlVal.split('?')[0];
+            const params = getKvData('paramsContainer').filter(p => p.isActive && p.key);
+
+            if (params.length > 0) {
+                const searchParams = new URLSearchParams();
+                params.forEach(p => searchParams.append(p.key, p.value));
+                urlInput.value = baseUrl + '?' + searchParams.toString();
+            } else {
+                urlInput.value = baseUrl;
+            }
+        }
 
         // --- Resizer Logic ---
         function initResizer() {
@@ -778,7 +859,7 @@
                 startHeight = paneTop.getBoundingClientRect().height;
                 resizer.classList.add('dragging');
                 document.body.style.cursor = 'ns-resize';
-                e.preventDefault(); // Prevent text selection
+                e.preventDefault();
             });
 
             document.addEventListener('mousemove', (e) => {
@@ -786,16 +867,13 @@
                 const dy = e.clientY - startY;
                 let newHeight = startHeight + dy;
 
-                // Minimum height constraints
                 if (newHeight < 150) newHeight = 150;
 
-                // Maximum height to prevent hiding the bottom pane entirely
                 const containerHeight = document.querySelector('.main-content').clientHeight;
                 const topBarHeights = document.querySelector('.request-header').clientHeight + document.querySelector('.url-bar-container').clientHeight;
-                const maxAvailable = containerHeight - topBarHeights - 150; // Leave 150px for the response pane
+                const maxAvailable = containerHeight - topBarHeights - 150;
 
                 if (newHeight > maxAvailable) newHeight = maxAvailable;
-
                 paneTop.style.height = `${newHeight}px`;
             });
 
@@ -867,7 +945,7 @@
         }
 
         // --- Key-Value Editor Logic ---
-        function addKvRow(containerId, defaultKey = '', defaultValue = '') {
+        function addKvRow(containerId, defaultKey = '', defaultValue = '', isParam = false) {
             const container = document.getElementById(containerId);
             const row = document.createElement('div');
             row.className = 'kv-row';
@@ -875,8 +953,21 @@
                 <input type="checkbox" class="kv-check" checked title="Include in request">
                 <input type="text" class="input-base kv-key" placeholder="Key" value="${defaultKey}">
                 <input type="text" class="input-base kv-value" placeholder="Value" value="${defaultValue}">
-                <button class="btn-icon btn-danger" onclick="this.parentElement.remove()" title="Remove">✖</button>
+                <button class="btn-icon btn-danger kv-delete" title="Remove">✖</button>
             `;
+
+            // Add Listeners if it's the Params container to sync URL
+            if (isParam) {
+                row.querySelectorAll('input').forEach(inp => inp.addEventListener('input', updateUrlFromParams));
+                row.querySelector('.kv-check').addEventListener('change', updateUrlFromParams);
+                row.querySelector('.kv-delete').addEventListener('click', function () {
+                    this.parentElement.remove();
+                    updateUrlFromParams();
+                });
+            } else {
+                row.querySelector('.kv-delete').addEventListener('click', function () { this.parentElement.remove(); });
+            }
+
             container.appendChild(row);
         }
 
@@ -897,8 +988,9 @@
         function setKvData(containerId, dataArray) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
+            const isParam = containerId === 'paramsContainer';
             if (!dataArray || dataArray.length === 0) {
-                addKvRow(containerId); // Add empty row
+                addKvRow(containerId, '', '', isParam);
                 return;
             }
             dataArray.forEach(item => {
@@ -908,9 +1000,55 @@
                     <input type="checkbox" class="kv-check" ${item.isActive !== false ? 'checked' : ''} title="Include in request">
                     <input type="text" class="input-base kv-key" placeholder="Key" value="${item.key || ''}">
                     <input type="text" class="input-base kv-value" placeholder="Value" value="${item.value || ''}">
-                    <button class="btn-icon btn-danger" onclick="this.parentElement.remove()" title="Remove">✖</button>
+                    <button class="btn-icon btn-danger kv-delete" title="Remove">✖</button>
                 `;
+
+                if (isParam) {
+                    row.querySelectorAll('input').forEach(inp => inp.addEventListener('input', updateUrlFromParams));
+                    row.querySelector('.kv-check').addEventListener('change', updateUrlFromParams);
+                    row.querySelector('.kv-delete').addEventListener('click', function () {
+                        this.parentElement.remove();
+                        updateUrlFromParams();
+                    });
+                } else {
+                    row.querySelector('.kv-delete').addEventListener('click', function () { this.parentElement.remove(); });
+                }
                 container.appendChild(row);
+            });
+        }
+
+        // Similar to setKvData but does not attach URL sync listeners to avoid infinite loops when typing in URL bar
+        function setKvDataSilent(containerId, dataArray) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            if (!dataArray || dataArray.length === 0) {
+                addKvRow(containerId, '', '', true);
+                return;
+            }
+            dataArray.forEach(item => {
+                addKvRow(containerId, item.key, item.value, true);
+            });
+        }
+
+        function copyResponseText() {
+            const text = document.getElementById('responseBody').textContent;
+            if (!text || text.includes('Waiting for response...')) return;
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Copied to clipboard", "success");
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast("Copied to clipboard", "success");
+                } catch (err) {
+                    showToast("Failed to copy", "error");
+                }
+                document.body.removeChild(textArea);
             });
         }
 
@@ -929,45 +1067,32 @@
             }
 
             const method = document.getElementById('reqMethod').value;
+            const finalUrl = baseUrl; // Query params are now kept in sync with the URL input natively
 
-            // 1. Process Query Params
-            const params = getKvData('paramsContainer').filter(p => p.isActive);
-            let finalUrl = baseUrl;
-            if (params.length > 0) {
-                try {
-                    const urlObj = new URL(baseUrl);
-                    params.forEach(p => urlObj.searchParams.append(p.key, p.value));
-                    finalUrl = urlObj.toString();
-                } catch (e) {
-                    showToast("Invalid URL format", "error");
-                    return;
-                }
-            }
-
-            // 2. Process Headers
+            // 1. Process Headers
             const headersList = getKvData('headersContainer').filter(h => h.isActive);
             const headers = new Headers();
             headersList.forEach(h => headers.append(h.key, h.value));
 
-            // 3. Process Auth
+            // 2. Process Auth
             const authType = document.getElementById('authType').value;
             if (authType === 'bearer') {
                 const token = document.getElementById('authToken').value.trim();
                 if (token) headers.set('Authorization', `Bearer ${token}`);
             }
 
-            // 4. Process Body
+            // 3. Process Body
             let body = null;
             const hasBody = !['GET', 'HEAD', 'OPTIONS'].includes(method);
             if (hasBody) {
                 body = document.getElementById('reqBody').value;
                 const contentType = document.getElementById('bodyContentType').value;
-                if (contentType !== 'none') {
+                if (contentType !== 'none' && !headers.has('Content-Type')) {
                     headers.set('Content-Type', contentType);
                 }
             }
 
-            // 5. Setup UI for Loading
+            // 4. Setup UI for Loading
             const resBodyEl = document.getElementById('responseBody');
             const resStatusEl = document.getElementById('resStatus');
             const resTimeEl = document.getElementById('resTime');
@@ -984,15 +1109,11 @@
 
             // Populate Request Payload Tab
             let requestLog = `${method} ${finalUrl}\n`;
-            headers.forEach((value, key) => {
-                requestLog += `${key}: ${value}\n`;
-            });
-            if (hasBody && body) {
-                requestLog += `\n${body}`;
-            }
+            headers.forEach((value, key) => { requestLog += `${key}: ${value}\n`; });
+            if (hasBody && body) { requestLog += `\n${body}`; }
             reqSentEl.textContent = requestLog;
 
-            // 6. Fetch
+            // 5. Fetch
             const startTime = performance.now();
             try {
                 const response = await fetch(finalUrl, {
@@ -1006,11 +1127,11 @@
                 const duration = Math.round(endTime - startTime);
                 resTimeEl.textContent = `${duration} ms`;
 
-                // Status
+                // Status Badge UI
                 resStatusEl.textContent = `${response.status} ${response.statusText}`;
-                if (response.status >= 200 && response.status < 300) resStatusEl.className = "meta-value status-success";
-                else if (response.status >= 400) resStatusEl.className = "meta-value status-error";
-                else resStatusEl.className = "meta-value status-warning";
+                if (response.status >= 200 && response.status < 300) resStatusEl.className = "meta-value badge status-success";
+                else if (response.status >= 400) resStatusEl.className = "meta-value badge status-error";
+                else resStatusEl.className = "meta-value badge status-warning";
 
                 // Headers processing
                 let resHeadersHtml = '<div style="display:grid; grid-template-columns: auto 1fr; gap: 8px 16px;">';
@@ -1022,14 +1143,16 @@
 
                 // Body processing
                 const responseType = response.headers.get("content-type") || "";
-                let responseData;
+                let responseData = await response.text(); // Read as text first to avoid crashes on empty JSON bodies
 
-                if (responseType.includes("application/json")) {
-                    const json = await response.json();
-                    responseData = JSON.stringify(json, null, 2);
-                    resBodyEl.textContent = responseData;
+                if (responseType.includes("application/json") && responseData.trim().length > 0) {
+                    try {
+                        const json = JSON.parse(responseData);
+                        resBodyEl.textContent = JSON.stringify(json, null, 2);
+                    } catch (e) {
+                        resBodyEl.textContent = responseData; // Fallback to raw text if parsing fails
+                    }
                 } else {
-                    responseData = await response.text();
                     resBodyEl.textContent = responseData;
                 }
 
@@ -1041,7 +1164,8 @@
                 const endTime = performance.now();
                 resTimeEl.textContent = `${Math.round(endTime - startTime)} ms`;
                 resStatusEl.textContent = "Network Error";
-                resStatusEl.className = "meta-value status-error";
+                resStatusEl.className = "meta-value badge status-error";
+                resSizeEl.textContent = "0 Bytes";
 
                 resBodyEl.innerHTML = `
                     <div class="cors-warning">
@@ -1066,12 +1190,10 @@
         function saveToHistory(requestData) {
             let history = getHistory();
             if (currentRequestId) {
-                // Update existing
                 const index = history.findIndex(h => h.id === currentRequestId);
                 if (index !== -1) history[index] = requestData;
                 else history.unshift(requestData);
             } else {
-                // Add new
                 history.unshift(requestData);
                 currentRequestId = requestData.id;
             }
@@ -1104,6 +1226,13 @@
             document.getElementById('resTime').textContent = '-';
             document.getElementById('resSize').textContent = '-';
             document.getElementById('resStatus').className = 'meta-value';
+        }
+
+        function clearAllHistory() {
+            localStorage.removeItem(STATE_KEY);
+            createNewRequest();
+            loadHistoryUI();
+            showToast("History cleared", "info");
         }
 
         function loadHistoryItem(id) {

@@ -652,27 +652,34 @@
         let activeWorkbookId = null;
         let activeLabId = null;
 
-        const DEFAULT_AWS_WORKBOOK = {
-            id: 'wb-aws-default',
-            title: 'AWS Cloud Practitioner',
-            description: 'A comprehensive guide to preparing for the AWS Cloud Practitioner exam.',
-            icon: 'fa-brands fa-aws',
-            color: '#FF9900',
-            moduleLabel: 'Lab',
-            stepLabel: 'Checkpoint',
+        const DEFAULT_WORKBOOK = {
+            id: 'wb-default',
+            title: 'My Workbook',
+            description: 'A starter workbook to organize your learning and topics.',
+            icon: 'fa-solid fa-book',
+            color: '#6366F1',
+            moduleLabel: 'Module',
+            stepLabel: 'Step',
             categories: [
                 {
-                    category: 'Identity & Security',
+                    category: 'Getting Started',
                     labs: [
                         {
-                            id: 'iam-init-99',
-                            title: 'IAM Root Security',
-                            icon: 'fa-solid fa-shield-halved',
-                            description: 'Secure your AWS root account with MFA and best practices.',
+                            id: 'init-01',
+                            title: 'Setup Your Workbook',
+                            icon: 'fa-solid fa-folder-open',
+                            description: 'Create your workbook and organize your topics.',
                             steps: [
-                                { id: 's1', text: 'Activate Multi-Factor Authentication (MFA)', description: 'MFA adds an extra layer of security on top of your username and password.\n\n`Best Practice:` Always use a virtual MFA device or a hardware key.' },
-                                { id: 's2', text: 'Create a password policy', description: '' },
-                                { id: 's3', text: 'Check the Security Status dashboard', description: 'Ensure all security indicators are green.' }
+                                {
+                                    id: 's1',
+                                    text: 'Create a Workbook',
+                                    description: 'Start by creating your workbook to organize all your modules and notes.\n\n`Tip:` Give it a meaningful name based on your goal.'
+                                },
+                                {
+                                    id: 's2',
+                                    text: 'Add Sub Topics',
+                                    description: 'Break your workbook into smaller topics or sections.\n\n`Example:` Basics, Advanced Concepts, Practice Questions.'
+                                }
                             ]
                         }
                     ]
@@ -728,7 +735,7 @@
                     localStorage.removeItem('awsLabsData');
                     localStorage.removeItem('awsLabProgress');
                 } else {
-                    appState.workbooks.push(DEFAULT_AWS_WORKBOOK);
+                    appState.workbooks.push(DEFAULT_WORKBOOK);
                     appState.progressData = { 's1': false, 's2': false, 's3': false };
                 }
                 saveState();

@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milestone Tracker</title>
+    <!-- Tailwind CSS with Typography Plugin for Markdown styling -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        app: {
+                            navy: '#1e293b',    // Slate 800
+                            darkGray: '#0f172a', // Slate 900
+                            gray: '#f1f5f9'     // Slate 100
+                        },
+                        brand: 'var(--theme-color)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --theme-color: #3b82f6;
+            /* Default Blue */
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
+        /* Sidebar Transition */
+        #sidebar {
+            transition: width 0.3s ease, transform 0.3s ease;
+        }
+
+        .collapsed-sidebar {
+            width: 80px !important;
+        }
+
+        .collapsed-sidebar .nav-text,
+        .collapsed-sidebar .nav-header,
+        .collapsed-sidebar .progress-container,
+        .collapsed-sidebar .sidebar-footer {
+            display: none;
+        }
+
+        .collapsed-sidebar .nav-btn {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .collapsed-sidebar .nav-btn i {
+            margin-right: 0;
+            font-size: 1.25rem;
+        }
+
+        /* Fix overlapping header in collapsed mode */
+        .collapsed-sidebar #sidebarHeader {
+            flex-direction: column;
+            padding: 16px 0;
+            height: auto;
+            gap: 16px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .collapsed-sidebar #sidebarHeader .back-btn-icon {
+            margin-right: 0 !important;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        /* Utility for dynamic text/bg colors based on theme */
+        .text-brand {
+            color: var(--theme-color);
+        }
+
+        .bg-brand {
+            background-color: var(--theme-color);
+        }
+
+        .border-brand {
+            border-color: var(--theme-color);
+        }
+
+        .ring-brand {
+            --tw-ring-color: var(--theme-color);
+        }
+
+        /* Custom Markdown Adjustments */
+        .prose pre {
+            background-color: #1e293b !important;
+            border: 1px solid #334155;
+        }
+
+        .dark .prose pre {
+            background-color: #0f172a !important;
+            border: 1px solid #1e293b;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-app-gray dark:bg-app-darkGray font-sans antialiased text-gray-800 dark:text-gray-200 h-screen overflow-hidden transition-colors duration-200">
+
+    <!-- ============================================== -->
+    <!-- VIEW 1: HOME DASHBOARD                         -->
+    <!-- ============================================== -->
+    <div id="homeView" class="h-full flex flex-col relative overflow-y-auto">
+        <!-- Dashboard Header -->
+        <header
+            class="bg-white dark:bg-gray-900 shadow-sm p-6 lg:px-12 flex justify-between items-center z-10 shrink-0 border-b border-gray-100 dark:border-gray-800">
+            <div class="flex items-center space-x-4">
+                <div class="bg-blue-600 text-white p-3 rounded-2xl shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-flag-checkered text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold text-gray-800 dark:text-white tracking-tight">Milestone</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Track your goals, modules, and
+                        progress</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleDarkMode()"
+                    class="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow-sm"
+                    title="Toggle Dark Mode">
+                    <i id="themeIconHome" class="fa-solid fa-moon"></i>
+                </button>
+                <button onclick="openGlobalSettingsModal()"
+                    class="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow-sm"
+                    title="Global Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="p-6 lg:p-12 max-w-7xl mx-auto w-full flex-1 flex flex-col">
+            <div id="dashboardHeaderRow" class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Your Workbooks</h2>
+                <button onclick="openWorkbookModal()"
+                    class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-blue-500/20 transition-all hover:-translate-y-0.5 flex items-center space-x-2">
+                    <i class="fa-solid fa-plus"></i>
+                    <span class="hidden sm:inline">New Workbook</span>
+                </button>
+            </div>
+
+            <!-- Workbook Grid (or Empty State) -->
+            <div id="workbookGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- VIEW 2: WORKBOOK LAB INTERFACE                 -->
+    <!-- ============================================== -->
+    <div id="workbookView" class="hidden h-full flex relative">
+        <!-- Mobile Menu Overlay -->
+        <div id="mobileMenuOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"
+            onclick="toggleMobileMenu()"></div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar"
+            class="bg-app-navy text-white w-80 flex-shrink-0 h-full flex flex-col fixed lg:static inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 z-50 shadow-2xl lg:shadow-none">
+            <!-- Sidebar Header with Back Button & Hamburger -->
+            <div id="sidebarHeader"
+                class="p-5 flex items-center justify-between border-b border-gray-700 h-[72px] shrink-0 bg-gray-900/50 transition-all">
+                <button onclick="closeWorkbook()"
+                    class="flex items-center space-x-3 text-gray-400 hover:text-white transition group overflow-hidden"
+                    title="Back to Dashboard">
+                    <div class="bg-gray-800 group-hover:bg-gray-700 p-2 rounded-lg transition-colors">
+                        <i class="fa-solid fa-arrow-left back-btn-icon"></i>
+                    </div>
+                    <span class="font-bold tracking-wide truncate nav-text">Dashboard</span>
+                </button>
+                <button class="text-gray-400 hover:text-white shrink-0 ml-2 bg-gray-800 p-2 rounded-lg"
+                    onclick="toggleSidebarCollapse()" title="Toggle Sidebar">
+                    <i class="fa-solid fa-bars-staggered text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Items Container -->
+            <nav id="moduleList" class="flex-1 overflow-y-auto px-4 py-6 space-y-6">
+                <!-- Modules injected here -->
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="p-5 border-t border-gray-800 space-y-3 sidebar-footer bg-gray-900/50">
+                <button onclick="openManageLabModal()" id="btnSidebarAddModule"
+                    class="w-full flex items-center justify-center space-x-2 bg-brand hover:opacity-90 text-white py-3 px-4 rounded-xl text-sm transition font-bold shadow-lg shadow-brand/20">
+                    <i class="fa-solid fa-plus-circle"></i>
+                    <span>Add New Lab</span>
+                </button>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="openImportModal()" id="btnSidebarImport"
+                        class="w-full flex items-center justify-center space-x-2 border border-gray-700 hover:bg-gray-800 hover:border-gray-600 text-gray-300 py-2.5 px-2 rounded-xl text-xs transition font-semibold"
+                        title="Import data to this Workbook">
+                        <i class="fa-solid fa-file-import"></i>
+                        <span>Import</span>
+                    </button>
+                    <button onclick="resetCurrentWorkbookProgress()"
+                        class="w-full flex items-center justify-center space-x-2 border border-gray-700 hover:bg-gray-800 hover:border-gray-600 text-gray-300 py-2.5 px-2 rounded-xl text-xs transition font-semibold"
+                        title="Reset Progress for this Workbook">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Reset WB</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+            <!-- Header -->
+            <header
+                class="bg-white dark:bg-gray-900 shadow-sm flex items-center justify-between p-4 lg:px-8 h-[72px] shrink-0 transition-colors duration-200 border-b border-gray-100 dark:border-gray-800">
+                <div class="flex items-center overflow-hidden">
+                    <button class="lg:hidden text-gray-600 dark:text-gray-400 hover:text-gray-900 mr-4 shrink-0"
+                        onclick="toggleMobileMenu()">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                    <h2 id="currentModuleTitle" class="text-xl font-bold text-gray-800 dark:text-white truncate"
+                        title="Select a Module">Select a Module</h2>
+                </div>
+
+                <div class="flex items-center space-x-3 shrink-0 ml-4">
+                    <button onclick="toggleDarkMode()"
+                        class="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow-sm"
+                        title="Toggle Dark Mode">
+                        <i id="themeIconWb" class="fa-solid fa-moon"></i>
+                    </button>
+                    <button onclick="openGlobalSettingsModal()"
+                        class="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow-sm sm:hidden"
+                        title="Global Settings">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                    <div
+                        class="text-sm font-bold text-brand bg-brand/10 px-4 py-2 rounded-xl hidden sm:flex items-center space-x-2 border border-brand/20">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Milestone Tracking</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Overall Topic Progress Bar -->
+            <div
+                class="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 lg:px-8 py-4 flex-shrink-0 z-20 shadow-sm">
+                <div class="max-w-4xl mx-auto flex flex-col">
+                    <div class="flex items-center justify-between text-sm font-bold mb-2">
+                        <div class="flex items-center space-x-3 text-gray-700 dark:text-gray-200">
+                            <div
+                                class="bg-gray-100 dark:bg-gray-800 p-2 rounded-lg text-brand flex items-center justify-center">
+                                <i id="mainWbIcon" class="fa-solid fa-book"></i>
+                            </div>
+                            <span id="mainWbTitle" class="truncate max-w-[200px] sm:max-w-md">Workbook</span>
+                            <span class="text-gray-400 font-normal hidden sm:inline px-1">&bull; Overall Progress</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span id="overallProgressText" class="text-brand font-extrabold text-base">0%</span>
+                        </div>
+                    </div>
+                    <div
+                        class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2 overflow-hidden shadow-inner border border-gray-200 dark:border-gray-700/50">
+                        <div id="overallProgressBar"
+                            class="bg-brand h-2 rounded-full transition-all duration-700 ease-out" style="width: 0%">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="flex-1 overflow-y-auto p-4 lg:p-8 w-full bg-gray-50 dark:bg-[#0b1121]">
+                <div class="max-w-4xl mx-auto" id="labContent">
+                    <!-- Default State injected here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- MODALS                                         -->
+    <!-- ============================================== -->
+
+    <!-- 1. Global Settings / Import / Export Modal -->
+    <div id="globalSettingsModal" class="fixed inset-0 z-[70] flex items-center justify-center hidden p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeGlobalSettingsModal()"></div>
+        <div
+            class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-md z-10 overflow-hidden animate-fade-in border border-gray-100 dark:border-gray-700">
+            <div
+                class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-white flex items-center"><i
+                        class="fa-solid fa-gear mr-3 text-brand"></i> Milestone Settings</h3>
+                <button onclick="closeGlobalSettingsModal()"
+                    class="text-gray-400 hover:text-gray-600 bg-white dark:bg-gray-800 shadow-sm rounded-full w-8 h-8 flex items-center justify-center"><i
+                        class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-6">
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Data Management</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">Export your entire
+                        application state (all workbooks, topics, and progress) to a JSON file, or import an existing
+                        backup.</p>
+
+                    <div class="space-y-3">
+                        <button onclick="exportAllData()"
+                            class="w-full flex items-center justify-center space-x-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-3.5 px-4 rounded-xl font-bold transition">
+                            <i class="fa-solid fa-download text-blue-500"></i>
+                            <span>Export All Data (Backup)</span>
+                        </button>
+
+                        <div>
+                            <input type="file" id="globalImportInput" accept=".json" class="hidden"
+                                onchange="importAllData(event)">
+                            <button onclick="document.getElementById('globalImportInput').click()"
+                                class="w-full flex items-center justify-center space-x-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-3.5 px-4 rounded-xl font-bold transition">
+                                <i class="fa-solid fa-upload text-green-500"></i>
+                                <span>Import Data (Restore)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-100 dark:border-gray-700 pt-6">
+                    <button onclick="factoryReset()"
+                        class="w-full flex items-center justify-center space-x-2 border border-red-200 bg-red-50 hover:bg-red-100 dark:border-red-900/30 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 py-3.5 px-4 rounded-xl font-bold transition">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>Factory Reset Application</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Create/Edit Workbook Modal -->
+    <div id="workbookModal" class="fixed inset-0 z-[70] flex items-center justify-center hidden p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeWorkbookModal()"></div>
+        <div
+            class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-xl z-10 overflow-hidden animate-fade-in flex flex-col max-h-[90vh] border border-gray-100 dark:border-gray-700">
+            <div
+                class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 shrink-0">
+                <h3 id="workbookModalTitle" class="text-xl font-bold text-gray-800 dark:text-white flex items-center"><i
+                        class="fa-solid fa-book-open mr-3 text-brand"></i> Create Workbook</h3>
+                <button onclick="closeWorkbookModal()"
+                    class="text-gray-400 hover:text-gray-600 bg-white dark:bg-gray-800 shadow-sm rounded-full w-8 h-8 flex items-center justify-center"><i
+                        class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="workbookForm" class="p-6 space-y-5 overflow-y-auto">
+                <input type="hidden" id="wbFormId">
+                <div>
+                    <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Workbook Name</label>
+                    <input type="text" id="wbFormTitle" placeholder="e.g., Spring Boot Masterclass" required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all font-medium">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Workbook Description
+                        <span class="text-gray-400 font-normal">(Optional)</span></label>
+                    <textarea id="wbFormDescription" rows="2" placeholder="Briefly describe this workbook..."
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all text-sm"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Module
+                            Term</label>
+                        <input type="text" id="wbFormModuleLabel" placeholder="e.g. Lab, Topic" value="Lab" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Item Term</label>
+                        <input type="text" id="wbFormStepLabel" placeholder="e.g. Checkpoint, Question"
+                            value="Checkpoint" required
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all">
+                    </div>
+                </div>
+
+                <div
+                    class="flex space-x-6 bg-gray-50 dark:bg-gray-800/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 mt-2">
+                    <div class="flex-1">
+                        <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Icon
+                            (FontAwesome)</label>
+                        <div class="flex items-center space-x-3">
+                            <input type="text" id="wbFormIcon" placeholder="fa-brands fa-java" value="fa-solid fa-book"
+                                required
+                                class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-white dark:bg-gray-900 transition-all"
+                                oninput="updateIconPreview('wbFormIcon', 'wbIconPreview')">
+                            <div
+                                class="w-11 h-11 shrink-0 flex items-center justify-center bg-white dark:bg-gray-700 rounded-xl text-brand shadow-sm border border-gray-200 dark:border-gray-600">
+                                <i id="wbIconPreview" class="fa-solid fa-book text-xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-gray-500 mt-1.5 font-medium">Find icons at <a
+                                href="https://fontawesome.com/icons" target="_blank" class="text-brand hover:underline"
+                                title="Search FontAwesome Icons">FontAwesome</a>.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Theme
+                            Color</label>
+                        <input type="color" id="wbFormColor" value="#3b82f6"
+                            class="h-11 w-16 rounded-xl cursor-pointer border-0 p-0 bg-transparent shadow-sm">
+                    </div>
+                </div>
+            </form>
+            <div
+                class="p-6 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3 bg-gray-50 dark:bg-gray-900/50 shrink-0">
+                <button onclick="closeWorkbookModal()"
+                    class="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition">Cancel</button>
+                <button onclick="saveWorkbook()"
+                    class="px-8 py-2.5 rounded-xl bg-brand text-white font-bold hover:brightness-110 transition shadow-lg shadow-brand/30">Save
+                    Workbook</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Add/Edit Lab Modal (Within a Workbook) -->
+    <div id="manageLabModal" class="fixed inset-0 z-[70] flex items-center justify-center hidden p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeManageLabModal()"></div>
+        <div
+            class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-xl z-10 overflow-hidden animate-fade-in flex flex-col max-h-[90vh] border border-gray-100 dark:border-gray-700">
+            <div
+                class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 shrink-0">
+                <h3 id="labFormModalTitle" class="text-xl font-bold text-gray-800 dark:text-white flex items-center"><i
+                        class="fa-solid fa-puzzle-piece mr-3 text-brand"></i> Add Module</h3>
+                <button onclick="closeManageLabModal()"
+                    class="text-gray-400 hover:text-gray-600 bg-white dark:bg-gray-800 shadow-sm rounded-full w-8 h-8 flex items-center justify-center"><i
+                        class="fa-solid fa-times"></i></button>
+            </div>
+            <form id="labForm" class="p-6 space-y-5 overflow-y-auto">
+                <input type="hidden" id="labFormId">
+                <div>
+                    <label id="lblLabFormCategory"
+                        class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Category /
+                        Section</label>
+                    <input type="text" id="labFormCategory" placeholder="e.g., Core Concepts" required
+                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all font-medium">
+                </div>
+                <div>
+                    <label id="lblLabFormTitle"
+                        class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Module Title</label>
+                    <input type="text" id="labFormTitle" placeholder="e.g., Building the first component" required
+                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all font-medium">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="md:col-span-2">
+                        <label id="lblLabFormIcon"
+                            class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Icon (FontAwesome
+                            Class)</label>
+                        <div class="flex items-center space-x-3">
+                            <input type="text" id="labFormIcon" placeholder="fa-solid fa-code" value="fa-solid fa-vial"
+                                required
+                                class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all"
+                                oninput="updateIconPreview('labFormIcon', 'labIconPreview')">
+                            <div
+                                class="w-11 h-11 shrink-0 flex items-center justify-center bg-white dark:bg-gray-700 rounded-xl text-brand shadow-sm border border-gray-200 dark:border-gray-600">
+                                <i id="labIconPreview" class="fa-solid fa-vial text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label id="lblLabFormDesc"
+                        class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Description</label>
+                    <textarea id="labFormDescription" rows="2" placeholder="Explain the objective..." required
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all text-sm"></textarea>
+                </div>
+
+                <div
+                    class="bg-gray-100 dark:bg-gray-800/30 p-4 rounded-2xl border border-gray-200 dark:border-gray-700/50 mt-4">
+                    <div class="flex justify-between items-end mb-3">
+                        <label id="lblLabFormSteps"
+                            class="block text-sm font-bold text-gray-700 dark:text-gray-300">Items / Checkpoints</label>
+                    </div>
+                    <div id="stepsContainer" class="space-y-3">
+                        <!-- Items dynamically injected here -->
+                    </div>
+                    <button type="button" onclick="addStepInput()" id="btnLabFormAddStep"
+                        class="mt-4 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-brand text-sm font-bold py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center justify-center shadow-sm">
+                        <i class="fa-solid fa-plus mr-2"></i> Add Another Item
+                    </button>
+                </div>
+            </form>
+            <div
+                class="p-6 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3 bg-gray-50 dark:bg-gray-900/50 shrink-0">
+                <button onclick="closeManageLabModal()"
+                    class="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition">Cancel</button>
+                <button onclick="saveNewLab()" id="btnLabFormSave"
+                    class="px-8 py-2.5 rounded-xl bg-brand text-white font-bold hover:brightness-110 transition shadow-lg shadow-brand/30">Save
+                    Module</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Import JSON Modal (Workbook Level) -->
+    <div id="importModal" class="fixed inset-0 z-[70] flex items-center justify-center hidden p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeImportModal()"></div>
+        <div
+            class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-2xl z-10 overflow-hidden animate-fade-in flex flex-col max-h-[90vh] border border-gray-100 dark:border-gray-700">
+            <div
+                class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 shrink-0">
+                <h3 id="importModalTitle" class="text-xl font-bold text-gray-800 dark:text-white flex items-center"><i
+                        class="fa-solid fa-file-import mr-3 text-brand"></i> Import Data</h3>
+                <button onclick="closeImportModal()"
+                    class="text-gray-400 hover:text-gray-600 bg-white dark:bg-gray-800 shadow-sm rounded-full w-8 h-8 flex items-center justify-center"><i
+                        class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-6">
+                <!-- File Upload -->
+                <div
+                    class="bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl p-5">
+                    <label class="block text-sm font-bold text-blue-800 dark:text-blue-300 mb-2">Upload JSON
+                        File</label>
+                    <input type="file" id="importJsonFileInput" accept=".json"
+                        class="w-full text-sm text-gray-600 dark:text-gray-400 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition cursor-pointer bg-white dark:bg-gray-900 rounded-xl p-1 shadow-sm border border-gray-200 dark:border-gray-700">
+                </div>
+
+                <div class="flex items-center text-gray-400 my-2">
+                    <div class="flex-1 border-t border-gray-200 dark:border-gray-700"></div>
+                    <span class="px-4 text-[10px] font-bold uppercase tracking-widest text-gray-400">OR</span>
+                    <div class="flex-1 border-t border-gray-200 dark:border-gray-700"></div>
+                </div>
+
+                <!-- Paste JSON -->
+                <div>
+                    <label class="block text-sm font-bold mb-2 text-gray-700 dark:text-gray-300">Paste JSON Data</label>
+                    <textarea id="importJsonTextarea" rows="6" placeholder='Paste JSON array of categories...'
+                        class="w-full px-5 py-4 rounded-2xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none font-mono text-sm bg-gray-50 dark:bg-gray-900 shadow-inner"></textarea>
+                    <p id="importSampleHint" class="text-xs text-gray-500 mt-2 font-medium">The parser adapts
+                        automatically to arrays.</p>
+                </div>
+
+                <!-- Sample JSON -->
+                <details
+                    class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+                    <summary
+                        class="p-4 font-bold cursor-pointer text-sm outline-none hover:bg-gray-50 dark:hover:bg-gray-700/50 transition flex items-center justify-between">
+                        <span>View Sample JSON Format</span>
+                        <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                    </summary>
+                    <div class="p-0 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#0f172a]">
+                        <pre
+                            class="m-0"><code id="importSampleCode" class="text-xs text-gray-600 dark:text-gray-400 overflow-x-auto p-4 block bg-transparent"></code></pre>
+                    </div>
+                </details>
+            </div>
+            <div
+                class="p-6 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3 bg-gray-50 dark:bg-gray-900/50 shrink-0">
+                <button onclick="closeImportModal()"
+                    class="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition">Cancel</button>
+                <button onclick="executeLabImport()"
+                    class="px-8 py-2.5 rounded-xl bg-brand text-white font-bold hover:brightness-110 shadow-lg shadow-brand/30 transition">Import
+                    JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // SAFE HISTORY API WRAPPERS
+        // ==========================================
+        function safeReplaceState(state, title, url) {
+            try { history.replaceState(state, title, url); } catch (e) { }
+        }
+        function safePushState(state, title, url) {
+            try { history.pushState(state, title, url); } catch (e) { }
+        }
+
+        // ==========================================
+        // CORE STATE & LOCALSTORAGE KEYS
+        // ==========================================
+        const APP_STORAGE_KEY = 'milestone_appData';
+
+        let appState = {
+            workbooks: [],
+            progressData: {}
+        };
+
+        let activeWorkbookId = null;
+        let activeLabId = null;
+
+        const DEFAULT_AWS_WORKBOOK = {
+            id: 'wb-aws-default',
+            title: 'AWS Cloud Practitioner',
+            description: 'A comprehensive guide to preparing for the AWS Cloud Practitioner exam.',
+            icon: 'fa-brands fa-aws',
+            color: '#FF9900',
+            moduleLabel: 'Lab',
+            stepLabel: 'Checkpoint',
+            categories: [
+                {
+                    category: 'Identity & Security',
+                    labs: [
+                        {
+                            id: 'iam-init-99',
+                            title: 'IAM Root Security',
+                            icon: 'fa-solid fa-shield-halved',
+                            description: 'Secure your AWS root account with MFA and best practices.',
+                            steps: [
+                                { id: 's1', text: 'Activate Multi-Factor Authentication (MFA)', description: 'MFA adds an extra layer of security on top of your username and password.\n\n`Best Practice:` Always use a virtual MFA device or a hardware key.' },
+                                { id: 's2', text: 'Create a password policy', description: '' },
+                                { id: 's3', text: 'Check the Security Status dashboard', description: 'Ensure all security indicators are green.' }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // ==========================================
+        // INITIALIZATION & MIGRATION
+        // ==========================================
+        function initApp() {
+            // Apply Theme Mode
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIconHome').className = 'fa-solid fa-sun';
+                document.getElementById('themeIconWb').className = 'fa-solid fa-sun';
+            }
+
+            // Load Data from Milestone Key
+            const storedState = localStorage.getItem(APP_STORAGE_KEY);
+
+            if (storedState) {
+                appState = JSON.parse(storedState);
+
+                // Migrate any workbooks missing dynamic labels/descriptions
+                appState.workbooks.forEach(w => {
+                    if (!w.moduleLabel) w.moduleLabel = 'Lab';
+                    if (!w.stepLabel) w.stepLabel = 'Checkpoint';
+                    if (w.description === undefined) w.description = '';
+                });
+            } else {
+                // Check for Legacy Data (older keys)
+                const oldTrackerData = localStorage.getItem('learningTrackerData');
+                const legacyLabs = localStorage.getItem('awsLabsData');
+                const legacyProgress = localStorage.getItem('awsLabProgress');
+
+                if (oldTrackerData) {
+                    appState = JSON.parse(oldTrackerData);
+                    localStorage.removeItem('learningTrackerData');
+                } else if (legacyLabs) {
+                    appState.workbooks.push({
+                        id: 'wb-aws-legacy-' + Date.now(),
+                        title: 'AWS Labs (Imported)',
+                        description: 'Legacy data imported from previous session.',
+                        icon: 'fa-brands fa-aws',
+                        color: '#FF9900',
+                        moduleLabel: 'Lab',
+                        stepLabel: 'Checkpoint',
+                        categories: JSON.parse(legacyLabs)
+                    });
+                    if (legacyProgress) appState.progressData = JSON.parse(legacyProgress);
+
+                    localStorage.removeItem('awsLabsData');
+                    localStorage.removeItem('awsLabProgress');
+                } else {
+                    appState.workbooks.push(DEFAULT_AWS_WORKBOOK);
+                    appState.progressData = { 's1': false, 's2': false, 's3': false };
+                }
+                saveState();
+            }
+
+            window.addEventListener('popstate', (e) => {
+                if (e.state && e.state.view === 'workbook') {
+                    openWorkbook(e.state.wbId, false, e.state.labId);
+                } else {
+                    showDashboard(false);
+                }
+            });
+
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const wbId = urlParams.get('wb');
+                const labId = urlParams.get('lab');
+                if (wbId && appState.workbooks.find(w => w.id === wbId)) {
+                    const url = labId ? `?wb=${wbId}&lab=${labId}` : `?wb=${wbId}`;
+                    safeReplaceState({ view: 'workbook', wbId: wbId, labId: labId }, '', url);
+                    openWorkbook(wbId, false, labId);
+                } else {
+                    safeReplaceState({ view: 'dashboard' }, '', window.location.pathname);
+                    showDashboard(false);
+                }
+            } catch (e) {
+                showDashboard(false);
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(appState));
+        }
+
+        // ==========================================
+        // UI THEME & NAVIGATION
+        // ==========================================
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.theme = isDark ? 'dark' : 'light';
+            document.getElementById('themeIconHome').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            document.getElementById('themeIconWb').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+
+        function setBrandColor(hexColor) {
+            document.documentElement.style.setProperty('--theme-color', hexColor);
+        }
+
+        function showDashboard(pushHistory = true) {
+            if (pushHistory) {
+                safePushState({ view: 'dashboard' }, '', window.location.pathname);
+            }
+            document.getElementById('workbookView').classList.add('hidden');
+            document.getElementById('homeView').classList.remove('hidden');
+            setBrandColor('#3b82f6');
+            activeWorkbookId = null;
+            renderDashboard();
+        }
+
+        function updateIconPreview(inputId, previewId) {
+            const val = document.getElementById(inputId).value;
+            document.getElementById(previewId).className = val + ' text-xl';
+        }
+
+        function openWorkbook(wbId, pushHistory = true, targetLabId = null) {
+            const wb = appState.workbooks.find(w => w.id === wbId);
+            if (!wb) {
+                showDashboard(false);
+                return;
+            }
+
+            activeWorkbookId = wb.id;
+            activeLabId = targetLabId;
+
+            if (pushHistory) {
+                const url = targetLabId ? `?wb=${wbId}&lab=${targetLabId}` : `?wb=${wbId}`;
+                safePushState({ view: 'workbook', wbId: wbId, labId: targetLabId }, '', url);
+            }
+
+            setBrandColor(wb.color || '#3b82f6');
+
+            // Setup Main Top Bar UI dynamic strings
+            const mainTitle = document.getElementById('mainWbTitle');
+            mainTitle.innerText = wb.title;
+            mainTitle.title = wb.title;
+            document.getElementById('mainWbIcon').className = `${wb.icon} text-brand shrink-0 transition-colors`;
+
+            // Setup Sidebar Footer
+            document.getElementById('btnSidebarAddModule').innerHTML = `<i class="fa-solid fa-plus-circle mr-2"></i> <span>Add New ${wb.moduleLabel}</span>`;
+            document.getElementById('btnSidebarImport').title = `Import ${wb.moduleLabel}s to this Workbook`;
+
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('workbookView').classList.remove('hidden');
+
+            renderSidebar();
+            renderLabContent(activeLabId);
+        }
+
+        function closeWorkbook() {
+            showDashboard();
+        }
+
+        function backToCategories() {
+            activeLabId = null;
+            safePushState({ view: 'workbook', wbId: activeWorkbookId, labId: null }, '', `?wb=${activeWorkbookId}`);
+            renderSidebar();
+            renderLabContent(null);
+        }
+
+        // ==========================================
+        // DASHBOARD RENDERER
+        // ==========================================
+        function renderDashboard() {
+            const grid = document.getElementById('workbookGrid');
+            const headerRow = document.getElementById('dashboardHeaderRow');
+
+            if (appState.workbooks.length === 0) {
+                // Render Empty State
+                headerRow.classList.add('hidden');
+                grid.className = "flex-1 flex items-center justify-center w-full min-h-[60vh]";
+                grid.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 p-10 sm:p-14 rounded-[2rem] shadow-xl shadow-blue-900/5 border border-gray-100 dark:border-gray-700 max-w-lg w-full text-center animate-fade-in relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-transparent dark:from-blue-900/10 pointer-events-none"></div>
+                        <div class="w-24 h-24 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-3xl flex items-center justify-center mx-auto mb-8 relative z-10 rotate-3 transition-transform hover:rotate-6">
+                            <i class="fa-solid fa-layer-group text-4xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-extrabold text-gray-800 dark:text-white mb-4 relative z-10 tracking-tight">Let's Get Started!</h2>
+                        <p class="text-gray-500 dark:text-gray-400 mb-10 leading-relaxed relative z-10 text-lg font-medium">Create your first milestone workbook to start tracking modules, tasks, and your overall progress.</p>
+                        <button onclick="openWorkbookModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:-translate-y-0.5 transition-all w-full flex items-center justify-center space-x-3 relative z-10 text-lg">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Create New Workbook</span>
+                        </button>
+                    </div>
+                `;
+            } else {
+                headerRow.classList.remove('hidden');
+                grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6";
+                grid.innerHTML = '';
+
+                appState.workbooks.forEach(wb => {
+                    const modLabel = wb.moduleLabel || 'Lab';
+                    const stepLabel = wb.stepLabel || 'Checkpoint';
+
+                    let totalSteps = 0;
+                    let completedSteps = 0;
+                    wb.categories.forEach(cat => cat.labs.forEach(lab => {
+                        lab.steps.forEach(step => {
+                            totalSteps++;
+                            if (appState.progressData[step.id]) completedSteps++;
+                        });
+                    }));
+                    const progPerc = totalSteps === 0 ? 0 : Math.round((completedSteps / totalSteps) * 100);
+                    const totalModules = wb.categories.reduce((acc, c) => acc + c.labs.length, 0);
+
+                    const card = document.createElement('div');
+                    card.className = "bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group cursor-pointer overflow-hidden";
+                    card.onclick = () => openWorkbook(wb.id);
+
+                    // Add subtle background gradient using brand color
+                    card.innerHTML = `
+                        <div class="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none transition-opacity group-hover:opacity-10" style="background: linear-gradient(to bottom right, ${wb.color}, transparent);"></div>
+                        
+                        <div class="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <button onclick="event.stopPropagation(); editWorkbook('${wb.id}')" class="text-gray-400 hover:text-blue-500 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-full w-9 h-9 flex items-center justify-center shadow-sm hover:shadow transition-all" title="Edit Topic"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="event.stopPropagation(); deleteWorkbook('${wb.id}')" class="text-gray-400 hover:text-red-500 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-full w-9 h-9 flex items-center justify-center shadow-sm hover:shadow transition-all" title="Delete Topic"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+                        
+                        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 text-white text-3xl shadow-md transform group-hover:scale-105 transition-transform duration-300 relative z-10" style="background-color: ${wb.color}; box-shadow: 0 4px 14px 0 ${wb.color}40;">
+                            <i class="${wb.icon}"></i>
+                        </div>
+                        
+                        <h3 class="text-xl font-extrabold text-gray-800 dark:text-white mb-2 truncate relative z-10 tracking-tight" title="${wb.title}">${wb.title}</h3>
+                        ${wb.description ? `<p class="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 relative z-10 font-medium" title="${wb.description}">${wb.description}</p>` : ''}
+                        <p class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-6 relative z-10">${totalModules} ${modLabel}s &bull; ${totalSteps} ${stepLabel}s</p>
+                        
+                        <div class="mt-auto relative z-10">
+                            <div class="flex justify-between text-xs font-extrabold mb-2" style="color: ${wb.color}">
+                                <span>PROGRESS</span>
+                                <span>${progPerc}%</span>
+                            </div>
+                            <div class="w-full bg-gray-100 dark:bg-gray-700/50 rounded-full h-2 overflow-hidden border border-gray-200 dark:border-gray-600">
+                                <div class="h-2 rounded-full transition-all duration-700 ease-out relative" style="width: ${progPerc}%; background-color: ${wb.color}">
+                                    <div class="absolute inset-0 bg-white/20"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        // ==========================================
+        // WORKBOOK INTERFACE RENDERERS
+        // ==========================================
+        function getActiveWorkbook() {
+            return appState.workbooks.find(w => w.id === activeWorkbookId);
+        }
+
+        function renderSidebar() {
+            const wb = getActiveWorkbook();
+            if (!wb) return;
+
+            const listEl = document.getElementById('moduleList');
+            listEl.innerHTML = '';
+
+            let totalWbSteps = 0;
+            let completedWbSteps = 0;
+
+            wb.categories.forEach(group => {
+                const groupContainer = document.createElement('div');
+
+                const header = document.createElement('div');
+                header.className = "nav-header text-[10px] font-bold text-gray-400/80 uppercase tracking-widest mb-3 px-1 flex items-center";
+                header.innerHTML = `<span>${group.category}</span><div class="ml-3 h-px flex-1 bg-gray-700/50"></div>`;
+                groupContainer.appendChild(header);
+
+                const itemsContainer = document.createElement('div');
+                itemsContainer.className = "space-y-1.5";
+
+                group.labs.forEach(lab => {
+                    const isActive = lab.id === activeLabId;
+
+                    let labTotal = lab.steps.length;
+                    let labComp = 0;
+                    lab.steps.forEach(s => {
+                        totalWbSteps++;
+                        if (appState.progressData[s.id]) {
+                            labComp++;
+                            completedWbSteps++;
+                        }
+                    });
+
+                    const progPerc = labTotal === 0 ? 0 : Math.round((labComp / labTotal) * 100);
+                    const isFullyComplete = progPerc === 100 && labTotal > 0;
+
+                    const btn = document.createElement('button');
+                    btn.className = `nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl transition-all text-left border border-transparent ${isActive ? 'bg-brand text-white shadow-md' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'}`;
+                    // Active state subtle border matching brand color
+                    if (isActive) btn.style.borderColor = 'rgba(255,255,255,0.2)';
+
+                    btn.onclick = () => selectLab(lab.id, true);
+                    btn.title = lab.title;
+
+                    btn.innerHTML = `
+                        <div class="flex items-center space-x-3 truncate pr-2">
+                            <i class="${lab.icon} ${isActive ? 'text-white' : 'text-gray-500'} w-5 text-center text-sm"></i>
+                            <span class="nav-text truncate font-bold text-[13px]" title="${lab.title}">${lab.title}</span>
+                        </div>
+                        <div class="nav-text flex items-center shrink-0">
+                            ${isFullyComplete
+                            ? '<i class="fa-solid fa-circle-check text-green-400 text-sm"></i>'
+                            : `<span class="text-[10px] font-extrabold ${isActive ? 'text-white/90' : 'text-gray-500'}">${progPerc}%</span>`
+                        }
+                        </div>
+                    `;
+                    itemsContainer.appendChild(btn);
+                });
+
+                groupContainer.appendChild(itemsContainer);
+                listEl.appendChild(groupContainer);
+            });
+
+            const totalPerc = totalWbSteps === 0 ? 0 : Math.round((completedWbSteps / totalWbSteps) * 100);
+            document.getElementById('overallProgressBar').style.width = totalPerc + '%';
+            document.getElementById('overallProgressText').innerText = totalPerc + '%';
+        }
+
+        function selectLab(labId, pushHistory = true) {
+            activeLabId = labId;
+            if (pushHistory) {
+                safePushState({ view: 'workbook', wbId: activeWorkbookId, labId: labId }, '', `?wb=${activeWorkbookId}&lab=${labId}`);
+            }
+            renderSidebar();
+            renderLabContent(labId);
+            if (window.innerWidth < 1024) toggleMobileMenu();
+        }
+
+        function renderLabContent(labId) {
+            const contentEl = document.getElementById('labContent');
+            const wb = getActiveWorkbook();
+            const titleEl = document.getElementById('currentModuleTitle');
+
+            if (!labId || !wb) {
+                titleEl.innerText = wb ? wb.title : "Milestone Home";
+                titleEl.title = wb ? wb.title : "Milestone Home";
+
+                if (!wb || wb.categories.length === 0) {
+                    // Empty State
+                    contentEl.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-[60vh] text-gray-500 text-center animate-fade-in px-4">
+                            <div class="bg-white dark:bg-gray-800 p-10 sm:p-14 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 max-w-lg w-full">
+                                <div class="w-20 h-20 bg-brand/10 text-brand rounded-2xl flex items-center justify-center mx-auto mb-6 rotate-3">
+                                    <i class="${wb ? wb.icon : 'fa-solid fa-book'} text-4xl"></i>
+                                </div>
+                                <h3 class="text-2xl font-extrabold text-gray-800 dark:text-white mb-3 tracking-tight">${wb ? wb.title : 'Milestone'}</h3>
+                                <p class="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed font-medium">Get started by creating your first ${wb ? wb.moduleLabel.toLowerCase() : 'module'}. You can group them into categories to keep everything organized.</p>
+                                <button onclick="openManageLabModal()" class="bg-brand text-white px-8 py-3.5 rounded-xl font-bold hover:brightness-110 shadow-lg shadow-brand/30 transition-all w-full flex items-center justify-center space-x-2">
+                                    <i class="fa-solid fa-plus"></i>
+                                    <span>Create New ${wb ? wb.moduleLabel : 'Module'}</span>
+                                </button>
+                            </div>
+                        </div>`;
+                } else {
+                    // Category Listing State
+                    let html = `<div class="animate-fade-in"><h3 class="text-2xl font-extrabold text-gray-800 dark:text-white mb-6 tracking-tight">Categories</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-5">`;
+
+                    wb.categories.forEach(cat => {
+                        const firstLabId = cat.labs.length > 0 ? cat.labs[0].id : null;
+                        const totalLabs = cat.labs.length;
+                        let catSteps = 0;
+                        let compSteps = 0;
+                        cat.labs.forEach(l => {
+                            l.steps.forEach(s => {
+                                catSteps++;
+                                if (appState.progressData[s.id]) compSteps++;
+                            });
+                        });
+                        const prog = catSteps === 0 ? 0 : Math.round((compSteps / catSteps) * 100);
+
+                        html += `
+                        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col group relative overflow-hidden" onclick="${firstLabId ? `selectLab('${firstLabId}')` : `openManageLabModal()`}">
+                            <div class="absolute inset-0 bg-brand opacity-0 group-hover:opacity-5 transition-opacity"></div>
+                            <div class="flex justify-between items-start mb-4 relative z-10">
+                                <h4 class="font-extrabold text-lg text-gray-800 dark:text-white group-hover:text-brand transition-colors pr-2 leading-tight">${cat.category}</h4>
+                                <span class="bg-brand/10 text-brand text-xs font-bold px-3 py-1.5 rounded-lg shrink-0 border border-brand/20">${totalLabs} ${wb.moduleLabel}s</span>
+                            </div>
+                            <div class="mt-auto pt-6 relative z-10">
+                                <div class="flex justify-between text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">
+                                    <span>Progress</span>
+                                    <span class="text-brand">${prog}%</span>
+                                </div>
+                                <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 shadow-inner overflow-hidden">
+                                    <div class="h-2 rounded-full bg-brand transition-all duration-700 ease-out" style="width: ${prog}%"></div>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+                    html += `</div></div>`;
+                    contentEl.innerHTML = html;
+                }
+                return;
+            }
+
+            let foundLab = null;
+            wb.categories.forEach(cat => {
+                const l = cat.labs.find(x => x.id === labId);
+                if (l) foundLab = l;
+            });
+
+            if (!foundLab) return;
+
+            titleEl.innerText = foundLab.title;
+            titleEl.title = foundLab.title;
+
+            let html = `
+                <div class="animate-fade-in">
+                    <div class="mb-5">
+                        <button onclick="backToCategories()" class="text-sm font-bold text-gray-500 hover:text-brand transition flex items-center space-x-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 inline-flex">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span>Back to Categories</span>
+                        </button>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 lg:p-8 mb-6 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-2 h-full bg-brand"></div>
+                        <div class="flex items-start space-x-5 pl-2">
+                            <div class="bg-brand/10 p-4 rounded-2xl text-brand shrink-0 border border-brand/20">
+                                <i class="${foundLab.icon} text-3xl"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start gap-4">
+                                    <h3 class="text-2xl font-extrabold text-gray-800 dark:text-white mb-2 leading-tight">${foundLab.title}</h3>
+                                    <div class="flex shrink-0 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700 p-1">
+                                        <button onclick="openManageLabModal('${foundLab.id}')" class="text-gray-400 hover:text-blue-500 hover:bg-white dark:hover:bg-gray-700 transition px-2.5 py-1.5 rounded mr-1" title="Edit ${wb.moduleLabel}">
+                                            <i class="fa-solid fa-pen text-sm"></i>
+                                        </button>
+                                        <button onclick="deleteLab('${foundLab.id}')" class="text-gray-400 hover:text-red-500 hover:bg-white dark:hover:bg-gray-700 transition px-2.5 py-1.5 rounded" title="Delete ${wb.moduleLabel}">
+                                            <i class="fa-solid fa-trash text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-400 leading-relaxed font-medium mt-1">${foundLab.description}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mb-4 px-2">
+                        <h4 class="font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs">${wb.stepLabel}s</h4>
+                        <span class="text-xs bg-brand/20 text-brand font-bold px-3 py-1.5 rounded-lg border border-brand/20">${foundLab.steps.length} ${wb.stepLabel}s</span>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden divide-y divide-gray-100 dark:divide-gray-700/50">
+            `;
+
+            let labComp = 0;
+            foundLab.steps.forEach((step, idx) => {
+                const checked = appState.progressData[step.id];
+                if (checked) labComp++;
+                html += `
+                    <div class="group relative">
+                        ${checked ? `<div class="absolute left-0 top-0 bottom-0 w-1 bg-brand transition-all duration-300 z-10"></div>` : ''}
+                        <label class="flex items-start p-5 sm:p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                            <div class="relative flex items-center pt-0.5 shrink-0">
+                                <input type="checkbox" ${checked ? 'checked' : ''} 
+                                    onchange="toggleStep('${step.id}')"
+                                    class="peer appearance-none w-6 h-6 border-2 border-gray-300 dark:border-gray-500 rounded-lg checked:bg-brand checked:border-brand transition-all cursor-pointer shadow-sm hover:border-brand">
+                                <i class="fa-solid fa-check absolute left-[5px] top-[7px] text-white text-[10px] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"></i>
+                            </div>
+                            <div class="ml-5 flex-1 flex items-start justify-between min-w-0">
+                                <div class="flex items-start flex-1 min-w-0">
+                                    <span class="text-sm font-bold text-gray-400 dark:text-gray-500 w-8 shrink-0 mt-0.5">${idx + 1}.</span>
+                                    <span class="text-lg leading-snug font-medium ${checked ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-200'} transition-all pr-4">${step.text}</span>
+                                </div>
+                                ${step.description ? `
+                                <button type="button" onclick="toggleStepDesc(event, 'desc-${step.id}')" class="ml-2 p-1.5 text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-brand/10 hover:text-brand rounded-lg transition shrink-0 border border-gray-200 dark:border-gray-700 hover:border-brand/30 shadow-sm" title="Show Description">
+                                    <i class="fa-solid fa-chevron-down transition-transform duration-300 text-sm" id="icon-${step.id}"></i>
+                                </button>
+                                ` : ''}
+                            </div>
+                        </label>
+                        ${step.description ? `
+                        <div id="desc-${step.id}" class="hidden px-6 pb-6 ml-[3.75rem] sm:ml-[4rem] pl-4 border-l-2 border-brand/20 text-sm prose prose-slate dark:prose-invert max-w-none">${marked.parse(step.description)}</div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            html += `</div>`;
+
+            const progPerc = foundLab.steps.length === 0 ? 0 : Math.round((labComp / foundLab.steps.length) * 100);
+            if (progPerc === 100 && foundLab.steps.length > 0) {
+                html += `
+                    <div class="mt-8 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border border-green-200 dark:border-green-700 rounded-3xl p-6 sm:p-8 flex items-center space-x-6 animate-fade-in shadow-sm">
+                        <div class="bg-green-500 text-white p-4 rounded-2xl shadow-lg shadow-green-500/30 rotate-3">
+                            <i class="fa-solid fa-award text-4xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-extrabold text-2xl text-green-800 dark:text-green-400 mb-1">${wb.moduleLabel} Complete!</h4>
+                            <p class="text-green-700 dark:text-green-300 font-medium">You've successfully mastered all ${wb.stepLabel.toLowerCase()}s for this module.</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            contentEl.innerHTML = html;
+        }
+
+        function toggleStep(stepId) {
+            appState.progressData[stepId] = !appState.progressData[stepId];
+            saveState();
+            renderLabContent(activeLabId);
+            renderSidebar();
+        }
+
+        function toggleStepDesc(e, descId) {
+            e.preventDefault();
+            e.stopPropagation();
+            const descEl = document.getElementById(descId);
+            const iconEl = document.getElementById(descId.replace('desc-', 'icon-'));
+            if (descEl.classList.contains('hidden')) {
+                descEl.classList.remove('hidden');
+                descEl.classList.add('animate-fade-in');
+                iconEl.classList.add('rotate-180');
+            } else {
+                descEl.classList.add('hidden');
+                descEl.classList.remove('animate-fade-in');
+                iconEl.classList.remove('rotate-180');
+            }
+        }
+
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileMenuOverlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+        function toggleSidebarCollapse() {
+            document.getElementById('sidebar').classList.toggle('collapsed-sidebar');
+        }
+
+        // ==========================================
+        // WORKBOOK CRUD MODAL
+        // ==========================================
+        function openWorkbookModal() {
+            document.getElementById('workbookForm').reset();
+            document.getElementById('wbFormId').value = '';
+            document.getElementById('wbFormDescription').value = '';
+            document.getElementById('wbFormModuleLabel').value = 'Lab';
+            document.getElementById('wbFormStepLabel').value = 'Checkpoint';
+            document.getElementById('workbookModalTitle').innerHTML = '<i class="fa-solid fa-book-open mr-3 text-brand"></i> Create Workbook';
+            updateIconPreview('wbFormIcon', 'wbIconPreview');
+            document.getElementById('workbookModal').classList.remove('hidden');
+        }
+
+        function editWorkbook(wbId) {
+            const wb = appState.workbooks.find(w => w.id === wbId);
+            if (!wb) return;
+            document.getElementById('wbFormId').value = wb.id;
+            document.getElementById('wbFormTitle').value = wb.title;
+            document.getElementById('wbFormDescription').value = wb.description || '';
+            document.getElementById('wbFormIcon').value = wb.icon;
+            document.getElementById('wbFormColor').value = wb.color;
+            document.getElementById('wbFormModuleLabel').value = wb.moduleLabel || 'Lab';
+            document.getElementById('wbFormStepLabel').value = wb.stepLabel || 'Checkpoint';
+
+            updateIconPreview('wbFormIcon', 'wbIconPreview');
+            document.getElementById('workbookModalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square mr-3 text-brand"></i> Edit Workbook';
+            document.getElementById('workbookModal').classList.remove('hidden');
+        }
+
+        function closeWorkbookModal() {
+            document.getElementById('workbookModal').classList.add('hidden');
+        }
+
+        function saveWorkbook() {
+            const id = document.getElementById('wbFormId').value;
+            const title = document.getElementById('wbFormTitle').value.trim();
+            const description = document.getElementById('wbFormDescription').value.trim();
+            const icon = document.getElementById('wbFormIcon').value.trim();
+            const color = document.getElementById('wbFormColor').value;
+            const moduleLabel = document.getElementById('wbFormModuleLabel').value.trim() || 'Lab';
+            const stepLabel = document.getElementById('wbFormStepLabel').value.trim() || 'Checkpoint';
+
+            if (!title) return alert("Title is required");
+
+            if (id) {
+                const wb = appState.workbooks.find(w => w.id === id);
+                wb.title = title;
+                wb.description = description;
+                wb.icon = icon;
+                wb.color = color;
+                wb.moduleLabel = moduleLabel;
+                wb.stepLabel = stepLabel;
+            } else {
+                appState.workbooks.push({
+                    id: 'wb-' + Date.now(),
+                    title, description, icon, color, moduleLabel, stepLabel,
+                    categories: []
+                });
+            }
+            saveState();
+            closeWorkbookModal();
+            renderDashboard();
+
+            // If the active workbook was edited, reflect changes dynamically
+            if (id === activeWorkbookId) {
+                openWorkbook(id, false, activeLabId);
+            }
+        }
+
+        function deleteWorkbook(wbId) {
+            if (confirm("Are you sure you want to delete this entire topic and all its data?")) {
+                appState.workbooks = appState.workbooks.filter(w => w.id !== wbId);
+                saveState();
+                renderDashboard();
+            }
+        }
+
+        // ==========================================
+        // LAB CRUD MODAL (Inside Workbook)
+        // ==========================================
+        function openManageLabModal(labId = null) {
+            const wb = getActiveWorkbook();
+            if (!wb) return;
+
+            document.getElementById('labForm').reset();
+            document.getElementById('labFormId').value = typeof labId === 'string' ? labId : '';
+
+            // Dynamic Label Changes
+            document.getElementById('labFormModalTitle').innerHTML = `<i class="fa-solid fa-puzzle-piece mr-3 text-brand"></i> ${(typeof labId === 'string' ? `Edit ` : `Add `) + wb.moduleLabel}`;
+            document.getElementById('lblLabFormTitle').innerText = `${wb.moduleLabel} Title`;
+            document.getElementById('labFormTitle').placeholder = `e.g., Intro to ${wb.title}`;
+            document.getElementById('lblLabFormSteps').innerText = `${wb.stepLabel}s`;
+            document.getElementById('btnLabFormAddStep').innerHTML = `<i class="fa-solid fa-plus mr-2"></i> Add Another ${wb.stepLabel}`;
+            document.getElementById('btnLabFormSave').innerText = `Save ${wb.moduleLabel}`;
+
+            if (typeof labId === 'string' && labId) {
+                // Edit Mode
+                let foundCat, foundLab;
+                wb.categories.forEach(c => {
+                    const l = c.labs.find(x => x.id === labId);
+                    if (l) { foundCat = c; foundLab = l; }
+                });
+
+                if (foundLab) {
+                    document.getElementById('labFormCategory').value = foundCat.category;
+                    document.getElementById('labFormTitle').value = foundLab.title;
+                    document.getElementById('labFormIcon').value = foundLab.icon;
+                    document.getElementById('labFormDescription').value = foundLab.description;
+
+                    const stepsContainer = document.getElementById('stepsContainer');
+                    stepsContainer.innerHTML = '';
+
+                    foundLab.steps.forEach(step => {
+                        const div = document.createElement('div');
+                        div.className = "flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm";
+                        div.innerHTML = `
+                            <div class="flex space-x-3">
+                                <input type="text" name="stepInputText" value="${step.text.replace(/"/g, '&quot;')}" class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
+                                <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 rounded-lg transition border border-red-100 dark:border-red-900/30" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                            <textarea name="stepInputDesc" rows="2" placeholder="Optional details, markdown supported..." class="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 text-sm">${step.description ? step.description.replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''}</textarea>
+                        `;
+                        stepsContainer.appendChild(div);
+                    });
+                }
+            } else {
+                // Create Mode
+                document.getElementById('stepsContainer').innerHTML = `
+                    <div class="flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm">
+                        <div class="flex space-x-3">
+                            <input type="text" name="stepInputText" placeholder="${wb.stepLabel} text..." class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
+                            <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 rounded-lg transition border border-red-100 dark:border-red-900/30" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                        <textarea name="stepInputDesc" rows="2" placeholder="Optional details, markdown supported..." class="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 text-sm"></textarea>
+                    </div>`;
+            }
+
+            updateIconPreview('labFormIcon', 'labIconPreview');
+            document.getElementById('manageLabModal').classList.remove('hidden');
+        }
+        function closeManageLabModal() { document.getElementById('manageLabModal').classList.add('hidden'); }
+
+        function addStepInput() {
+            const wb = getActiveWorkbook();
+            const container = document.getElementById('stepsContainer');
+            const div = document.createElement('div');
+            div.className = "flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm animate-fade-in";
+            div.innerHTML = `
+                <div class="flex space-x-3">
+                    <input type="text" name="stepInputText" placeholder="Next ${wb ? wb.stepLabel.toLowerCase() : 'item'}..." class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
+                    <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 rounded-lg transition border border-red-100 dark:border-red-900/30" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
+                </div>
+                <textarea name="stepInputDesc" rows="2" placeholder="Optional details, markdown supported..." class="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 text-sm"></textarea>
+            `;
+            container.appendChild(div);
+        }
+
+        function saveNewLab() {
+            const wb = getActiveWorkbook();
+            if (!wb) return;
+
+            const labIdInput = document.getElementById('labFormId').value;
+            const categoryName = document.getElementById('labFormCategory').value.trim();
+            const title = document.getElementById('labFormTitle').value.trim();
+            const icon = document.getElementById('labFormIcon').value.trim();
+            const desc = document.getElementById('labFormDescription').value.trim();
+
+            const stepTextInputs = document.getElementsByName('stepInputText');
+            const stepDescInputs = document.getElementsByName('stepInputDesc');
+
+            if (!categoryName || !title || !desc) return alert("Please fill required fields.");
+
+            const steps = [];
+            for (let i = 0; i < stepTextInputs.length; i++) {
+                const textVal = stepTextInputs[i].value.trim();
+                const descVal = stepDescInputs[i] ? stepDescInputs[i].value.trim() : '';
+                if (textVal !== "") {
+                    steps.push({ text: textVal, description: descVal });
+                }
+            }
+
+            if (steps.length === 0) return alert(`Add at least one ${wb.stepLabel.toLowerCase()}!`);
+
+            let targetLabId = labIdInput || 'lab-' + Date.now();
+
+            const mappedSteps = steps.map((s, i) => {
+                const sid = `step-${targetLabId}-${i}`;
+                if (appState.progressData[sid] === undefined) {
+                    appState.progressData[sid] = false;
+                }
+                return { id: sid, text: s.text, description: s.description };
+            });
+
+            if (labIdInput) {
+                // Remove old lab from its old category (in case category changed)
+                wb.categories.forEach((cat, cIdx) => {
+                    const lIdx = cat.labs.findIndex(l => l.id === labIdInput);
+                    if (lIdx > -1) {
+                        cat.labs.splice(lIdx, 1);
+                        if (cat.labs.length === 0) wb.categories.splice(cIdx, 1);
+                    }
+                });
+            }
+
+            let category = wb.categories.find(c => c.category === categoryName);
+            if (!category) {
+                category = { category: categoryName, labs: [] };
+                wb.categories.push(category);
+            }
+
+            category.labs.push({ id: targetLabId, title, icon, description: desc, steps: mappedSteps });
+
+            saveState();
+            closeManageLabModal();
+            selectLab(targetLabId, true); // Push history explicitly on saving
+        }
+
+        function deleteLab(labId) {
+            const wb = getActiveWorkbook();
+            if (confirm(`Permanently delete this ${wb.moduleLabel.toLowerCase()}?`)) {
+                wb.categories.forEach((cat, cIdx) => {
+                    const lIdx = cat.labs.findIndex(l => l.id === labId);
+                    if (lIdx > -1) {
+                        cat.labs.splice(lIdx, 1);
+                        if (cat.labs.length === 0) wb.categories.splice(cIdx, 1);
+                    }
+                });
+                saveState();
+
+                if (activeLabId === labId) {
+                    backToCategories();
+                } else {
+                    renderSidebar();
+                    renderLabContent(activeLabId);
+                }
+            }
+        }
+
+        function resetCurrentWorkbookProgress() {
+            if (confirm("Reset progress for all items in this workbook?")) {
+                const wb = getActiveWorkbook();
+                wb.categories.forEach(cat => cat.labs.forEach(lab => {
+                    lab.steps.forEach(s => appState.progressData[s.id] = false);
+                }));
+                saveState();
+                renderSidebar();
+                renderLabContent(activeLabId);
+            }
+        }
+
+        // ==========================================
+        // GLOBAL SETTINGS & DATA I/O
+        // ==========================================
+        function openGlobalSettingsModal() { document.getElementById('globalSettingsModal').classList.remove('hidden'); }
+        function closeGlobalSettingsModal() { document.getElementById('globalSettingsModal').classList.add('hidden'); }
+
+        function exportAllData() {
+            const dataStr = JSON.stringify(appState, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `milestone_backup_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importAllData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (!imported.workbooks || !Array.isArray(imported.workbooks)) {
+                        throw new Error("Invalid structure. Missing 'workbooks' array.");
+                    }
+                    if (confirm("This will overwrite your current app data. Proceed?")) {
+                        appState = imported;
+                        if (!appState.progressData) appState.progressData = {};
+                        saveState();
+                        alert("Milestone data successfully restored!");
+                        location.reload();
+                    }
+                } catch (error) {
+                    alert("Import failed: " + error.message);
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+            closeGlobalSettingsModal();
+        }
+
+        function factoryReset() {
+            if (confirm("WARNING: This will delete ALL workbooks and progress. This cannot be undone. Are you sure?")) {
+                localStorage.removeItem(APP_STORAGE_KEY);
+                location.reload();
+            }
+        }
+
+        // ==========================================
+        // WORKBOOK SPECIFIC IMPORT (JSON CATEGORIES)
+        // ==========================================
+        function openImportModal() {
+            const wb = getActiveWorkbook();
+            if (wb) {
+                document.getElementById('importModalTitle').innerHTML = `<i class="fa-solid fa-file-import mr-3 text-brand"></i> Import Data to ${wb.title}`;
+
+                const modKey = wb.moduleLabel.toLowerCase() + 's';
+                const stepKey = wb.stepLabel.toLowerCase() + 's';
+
+                document.getElementById('importSampleHint').innerHTML = `The parser automatically looks for arrays named <strong>"${modKey}"</strong> and inner items named <strong>"${stepKey}"</strong>.`;
+
+                const sampleJson = `[
+  {
+    "category": "Sample Section",
+    "${modKey}": [
+      {
+        "title": "Sample ${wb.moduleLabel}",
+        "icon": "fa-solid fa-star",
+        "description": "Short description here.",
+        "${stepKey}": [
+          { 
+            "text": "First ${wb.stepLabel.toLowerCase()}",
+            "description": "Optional details or **markdown** code here."
+          },
+          { 
+            "text": "Second ${wb.stepLabel.toLowerCase()}" 
+          }
+        ]
+      }
+    ]
+  }
+]`;
+                document.getElementById('importSampleCode').innerText = sampleJson;
+            }
+            document.getElementById('importModal').classList.remove('hidden');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.add('hidden');
+            document.getElementById('importJsonFileInput').value = '';
+            document.getElementById('importJsonTextarea').value = '';
+        }
+
+        async function executeLabImport() {
+            const fileInput = document.getElementById('importJsonFileInput');
+            const textArea = document.getElementById('importJsonTextarea');
+            let jsonString = '';
+
+            if (fileInput.files.length > 0) {
+                try { jsonString = await fileInput.files[0].text(); }
+                catch (e) { return alert('Error reading file.'); }
+            } else if (textArea.value.trim() !== '') {
+                jsonString = textArea.value.trim();
+            } else {
+                return alert('Upload file or paste JSON.');
+            }
+
+            try {
+                const importedCategories = JSON.parse(jsonString);
+                if (!Array.isArray(importedCategories)) throw new Error("Expected a JSON array of categories.");
+
+                const wb = getActiveWorkbook();
+                const expectedModKey = wb.moduleLabel.toLowerCase() + 's';
+                const expectedStepKey = wb.stepLabel.toLowerCase() + 's';
+
+                importedCategories.forEach(newCat => {
+                    // Flexible module detection: Find expected key, or just grab the first array property
+                    const arrayKeys = Object.keys(newCat).filter(k => Array.isArray(newCat[k]));
+                    const moduleKeyToUse = Array.isArray(newCat[expectedModKey]) ? expectedModKey : (arrayKeys.length > 0 ? arrayKeys[0] : null);
+                    const importModules = moduleKeyToUse ? newCat[moduleKeyToUse] : null;
+
+                    if (!newCat.category || !importModules) return;
+
+                    let existCat = wb.categories.find(c => c.category === newCat.category);
+                    if (!existCat) {
+                        existCat = { category: newCat.category, labs: [] }; // Stored internally as 'labs'
+                        wb.categories.push(existCat);
+                    }
+
+                    importModules.forEach(newMod => {
+                        // Flexible step detection: Find expected key, or just grab the first array property
+                        const stepArrayKeys = Object.keys(newMod).filter(k => Array.isArray(newMod[k]));
+                        const stepKeyToUse = Array.isArray(newMod[expectedStepKey]) ? expectedStepKey : (stepArrayKeys.length > 0 ? stepArrayKeys[0] : null);
+                        const importSteps = stepKeyToUse ? newMod[stepKeyToUse] : [];
+
+                        // Always generate new IDs to prevent collisions, ignoring uploaded IDs
+                        const labId = 'lab-import-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                        const steps = importSteps.map((step, idx) => {
+                            const sid = `step-${labId}-${idx}`;
+                            appState.progressData[sid] = false; // Init progress
+                            return {
+                                id: sid,
+                                text: typeof step === 'string' ? step : (step.text || 'Unnamed step'),
+                                description: typeof step === 'object' ? (step.description || '') : ''
+                            };
+                        });
+
+                        existCat.labs.push({
+                            id: labId,
+                            title: newMod.title || `Untitled ${wb.moduleLabel}`,
+                            icon: newMod.icon || 'fa-solid fa-vial',
+                            description: newMod.description || 'Imported item.',
+                            steps
+                        });
+                    });
+                });
+
+                saveState();
+                alert(`Successfully imported data to this workbook!`);
+                closeImportModal();
+
+                // Re-render to reflect new potential Labels and Data
+                openWorkbook(wb.id, false, activeLabId);
+            } catch (err) {
+                alert('Parsing error: ' + err.message);
+            }
+        }
+
+        // ==========================================
+        // BOOTSTRAP
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+
+</html>

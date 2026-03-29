@@ -308,7 +308,7 @@
                         <i class="fa-solid fa-gear"></i>
                     </button>
                     <div
-                        class="text-sm font-bold text-brand bg-brand/10 px-4 py-2 rounded-xl hidden sm:flex items-center space-x-2 border border-brand/20">
+                        class="text-sm font-bold text-brand bg-brand/10 px-4 py-2 rounded-xl hidden sm:flex items-center space-x-2">
                         <i class="fa-solid fa-circle-check"></i>
                         <span>Milestone Tracking</span>
                     </div>
@@ -801,6 +801,17 @@
         }
 
         function openWorkbook(wbId, pushHistory = true, targetLabId = null) {
+
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileMenuOverlay');
+            if (!sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
+
+            if (!overlay.classList.contains('hidden')) {
+                overlay.classList.add('hidden');
+            }
+
             const wb = appState.workbooks.find(w => w.id === wbId);
             if (!wb) {
                 showDashboard(false);
@@ -1011,7 +1022,6 @@
             }
             renderSidebar();
             renderLabContent(labId);
-            if (window.innerWidth < 1024) toggleMobileMenu();
         }
 
         function renderLabContent(labId) {
@@ -1061,7 +1071,7 @@
                             <div class="absolute inset-0 bg-brand opacity-0 group-hover:opacity-5 transition-opacity"></div>
                             <div class="flex justify-between items-start mb-4 relative z-10">
                                 <h4 class="font-extrabold text-lg text-gray-800 dark:text-white group-hover:text-brand transition-colors pr-2 leading-tight">${cat.category}</h4>
-                                <span class="bg-brand/10 text-brand text-xs font-bold px-3 py-1.5 rounded-lg shrink-0 border border-brand/20">${totalLabs} ${wb.moduleLabel}s</span>
+                                <span class="bg-brand/10 text-brand text-xs font-bold px-3 py-1.5 rounded-lg shrink-0">${totalLabs} ${wb.moduleLabel}s</span>
                             </div>
                             <div class="mt-auto pt-6 relative z-10">
                                 <div class="flex justify-between text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">
@@ -1092,7 +1102,7 @@
             titleEl.title = foundLab.title;
 
             let html = `
-                <div class="animate-fade-in">
+                <div>
                     <div class="mb-5">
                         <button onclick="backToCategories()" class="text-sm font-bold text-gray-500 hover:text-brand transition flex items-center space-x-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 inline-flex">
                             <i class="fa-solid fa-arrow-left"></i>
@@ -1102,7 +1112,7 @@
                     <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 lg:p-8 mb-6 relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-2 h-full bg-brand"></div>
                         <div class="flex items-start space-x-5 pl-2">
-                            <div class="bg-brand/10 p-4 rounded-2xl text-brand shrink-0 border border-brand/20">
+                            <div class="bg-brand/10 p-4 rounded-2xl text-brand shrink-0">
                                 <i class="${foundLab.icon} text-3xl"></i>
                             </div>
                             <div class="flex-1 min-w-0">
@@ -1124,7 +1134,7 @@
                     
                     <div class="flex items-center justify-between mb-4 px-2">
                         <h4 class="font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs">${wb.stepLabel}s</h4>
-                        <span class="text-xs bg-brand/20 text-brand font-bold px-3 py-1.5 rounded-lg border border-brand/20">${foundLab.steps.length} ${wb.stepLabel}s</span>
+                        <span class="text-xs bg-brand/20 text-brand font-bold px-3 py-1.5 rounded-lg">${foundLab.steps.length} ${wb.stepLabel}s</span>
                     </div>
 
                     <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden divide-y divide-gray-100 dark:divide-gray-700/50">
@@ -1142,7 +1152,7 @@
                                 <input type="checkbox" ${checked ? 'checked' : ''} 
                                     onchange="toggleStep('${step.id}')"
                                     class="peer appearance-none w-6 h-6 border-2 border-gray-300 dark:border-gray-500 rounded-lg checked:bg-brand checked:border-brand transition-all cursor-pointer shadow-sm hover:border-brand">
-                                <i class="fa-solid fa-check absolute left-[5px] top-[7px] text-white text-[10px] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"></i>
+                                <i class="fa-solid fa-check absolute left-[7px] top-[10px] text-white text-[10px] font-bold opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"></i>
                             </div>
                             <div class="ml-5 flex-1 flex items-start justify-between min-w-0">
                                 <div class="flex items-start flex-1 min-w-0">
@@ -1247,11 +1257,17 @@
         }
 
         function closeWorkbookModal() {
+            const titleInput = document.getElementById('wbFormTitle');
+            const title = document.getElementById('wbFormTitle').value.trim();
+            [titleInput].forEach(input => {
+                input.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            });
             document.getElementById('workbookModal').classList.add('hidden');
         }
 
         function saveWorkbook() {
             const id = document.getElementById('wbFormId').value;
+            const titleInput = document.getElementById('wbFormTitle');
             const title = document.getElementById('wbFormTitle').value.trim();
             const description = document.getElementById('wbFormDescription').value.trim();
             const icon = document.getElementById('wbFormIcon').value.trim();
@@ -1259,7 +1275,21 @@
             const moduleLabel = document.getElementById('wbFormModuleLabel').value.trim() || 'Lab';
             const stepLabel = document.getElementById('wbFormStepLabel').value.trim() || 'Checkpoint';
 
-            if (!title) return alert("Title is required");
+            let isValid = true;
+
+            // Reset previous error styles
+            [titleInput].forEach(input => {
+                input.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            });
+
+            // Validate Title
+            if (!title) {
+                titleInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+                isValid = false;
+            }
+
+            // Stop if invalid
+            if (!isValid) return;
 
             if (id) {
                 const wb = appState.workbooks.find(w => w.id === id);
@@ -1370,7 +1400,14 @@
             updateIconPreview('labFormIcon', 'labIconPreview');
             document.getElementById('manageLabModal').classList.remove('hidden');
         }
-        function closeManageLabModal() { document.getElementById('manageLabModal').classList.add('hidden'); }
+        function closeManageLabModal() {
+            const categoryInput = document.getElementById('labFormCategory');
+            const titleInput = document.getElementById('labFormTitle');
+            [categoryInput, titleInput].forEach(input => {
+                input.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            });
+            document.getElementById('manageLabModal').classList.add('hidden');
+        }
 
         function addStepInput() {
             const wb = getActiveWorkbook();
@@ -1392,6 +1429,9 @@
             if (!wb) return;
 
             const labIdInput = document.getElementById('labFormId').value;
+            const categoryInput = document.getElementById('labFormCategory');
+            const titleInput = document.getElementById('labFormTitle');
+
             const categoryName = document.getElementById('labFormCategory').value.trim();
             const title = document.getElementById('labFormTitle').value.trim();
             const icon = document.getElementById('labFormIcon').value.trim();
@@ -1400,7 +1440,27 @@
             const stepTextInputs = document.getElementsByName('stepInputText');
             const stepDescInputs = document.getElementsByName('stepInputDesc');
 
-            if (!categoryName || !title || !desc) return alert("Please fill required fields.");
+            let isValid = true;
+
+            // Reset previous error styles
+            [categoryInput, titleInput].forEach(input => {
+                input.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            });
+
+            // Validate Category
+            if (!categoryName) {
+                categoryInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+                isValid = false;
+            }
+
+            // Validate Title
+            if (!title) {
+                titleInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+                isValid = false;
+            }
+
+            // Stop if invalid
+            if (!isValid) return;
 
             const steps = [];
             for (let i = 0; i < stepTextInputs.length; i++) {
@@ -1449,6 +1509,11 @@
 
         function deleteLab(labId) {
             const wb = getActiveWorkbook();
+            const stepIds = wb.categories.flatMap(category =>
+                category.labs.flatMap(lab =>
+                    lab.steps.map(step => step.id)
+                )
+            );
             if (confirm(`Permanently delete this ${wb.moduleLabel.toLowerCase()}?`)) {
                 wb.categories.forEach((cat, cIdx) => {
                     const lIdx = cat.labs.findIndex(l => l.id === labId);
@@ -1456,6 +1521,11 @@
                         cat.labs.splice(lIdx, 1);
                         if (cat.labs.length === 0) wb.categories.splice(cIdx, 1);
                     }
+                });
+
+
+                stepIds.forEach(id => {
+                    delete appState.progressData[id];
                 });
                 saveState();
 

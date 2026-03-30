@@ -298,12 +298,12 @@
 
                 <div class="flex items-center space-x-3 shrink-0 ml-4">
                     <button onclick="toggleDarkMode()"
-                        class="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow-sm"
+                        class="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow-sm"
                         title="Toggle Dark Mode">
                         <i id="themeIconWb" class="fa-solid fa-moon"></i>
                     </button>
                     <button onclick="openGlobalSettingsModal()"
-                        class="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow-sm sm:hidden"
+                        class="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition shadow-sm sm:hidden"
                         title="Global Settings">
                         <i class="fa-solid fa-gear"></i>
                     </button>
@@ -1374,11 +1374,15 @@
 
                     foundLab.steps.forEach(step => {
                         const div = document.createElement('div');
-                        div.className = "flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm";
+                        div.className = "step-item flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm";
                         div.innerHTML = `
                             <div class="flex space-x-3">
                                 <input type="text" name="stepInputText" value="${step.text.replace(/"/g, '&quot;')}" class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
-                                <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 rounded-lg transition border border-red-100 dark:border-red-900/30" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
+                                <div class="flex space-x-1 shrink-0">
+                                    <button type="button" onclick="moveStepUp(this)" class="text-gray-500 bg-gray-100 dark:bg-gray-800 hover:text-brand px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700" title="Move Up"><i class="fa-solid fa-arrow-up"></i></button>
+                                    <button type="button" onclick="moveStepDown(this)" class="text-gray-500 bg-gray-100 dark:bg-gray-800 hover:text-brand px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700" title="Move Down"><i class="fa-solid fa-arrow-down"></i></button>
+                                    <button type="button" onclick="this.closest('.step-item').remove()" class="text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 py-2 rounded-lg transition border border-red-100 dark:border-red-900/30" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
+                                </div>
                             </div>
                             <textarea name="stepInputDesc" rows="2" placeholder="Optional details, markdown supported..." class="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 text-sm">${step.description ? step.description.replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''}</textarea>
                         `;
@@ -1388,10 +1392,14 @@
             } else {
                 // Create Mode
                 document.getElementById('stepsContainer').innerHTML = `
-                    <div class="flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm">
+                    <div class="step-item flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm">
                         <div class="flex space-x-3">
                             <input type="text" name="stepInputText" placeholder="${wb.stepLabel} text..." class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
-                            <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 rounded-lg transition border border-red-100 dark:border-red-900/30" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
+                            <div class="flex space-x-1 shrink-0">
+                                <button type="button" onclick="moveStepUp(this)" class="text-gray-500 bg-gray-100 dark:bg-gray-800 hover:text-brand px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700" title="Move Up"><i class="fa-solid fa-arrow-up"></i></button>
+                                <button type="button" onclick="moveStepDown(this)" class="text-gray-500 bg-gray-100 dark:bg-gray-800 hover:text-brand px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700" title="Move Down"><i class="fa-solid fa-arrow-down"></i></button>
+                                <button type="button" onclick="this.closest('.step-item').remove()" class="text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 py-2 rounded-lg transition border border-red-100 dark:border-red-900/30" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
+                            </div>
                         </div>
                         <textarea name="stepInputDesc" rows="2" placeholder="Optional details, markdown supported..." class="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 text-sm"></textarea>
                     </div>`;
@@ -1400,6 +1408,7 @@
             updateIconPreview('labFormIcon', 'labIconPreview');
             document.getElementById('manageLabModal').classList.remove('hidden');
         }
+
         function closeManageLabModal() {
             const categoryInput = document.getElementById('labFormCategory');
             const titleInput = document.getElementById('labFormTitle');
@@ -1413,11 +1422,15 @@
             const wb = getActiveWorkbook();
             const container = document.getElementById('stepsContainer');
             const div = document.createElement('div');
-            div.className = "flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm animate-fade-in";
+            div.className = "step-item flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm animate-fade-in";
             div.innerHTML = `
                 <div class="flex space-x-3">
                     <input type="text" name="stepInputText" placeholder="Next ${wb ? wb.stepLabel.toLowerCase() : 'item'}..." class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
-                    <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 rounded-lg transition border border-red-100 dark:border-red-900/30" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
+                    <div class="flex space-x-1 shrink-0">
+                        <button type="button" onclick="moveStepUp(this)" class="text-gray-500 bg-gray-100 dark:bg-gray-800 hover:text-brand px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700" title="Move Up"><i class="fa-solid fa-arrow-up"></i></button>
+                        <button type="button" onclick="moveStepDown(this)" class="text-gray-500 bg-gray-100 dark:bg-gray-800 hover:text-brand px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700" title="Move Down"><i class="fa-solid fa-arrow-down"></i></button>
+                        <button type="button" onclick="this.closest('.step-item').remove()" class="text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 py-2 rounded-lg transition border border-red-100 dark:border-red-900/30" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
+                    </div>
                 </div>
                 <textarea name="stepInputDesc" rows="2" placeholder="Optional details, markdown supported..." class="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 text-sm"></textarea>
             `;
@@ -1721,6 +1734,26 @@
                 openWorkbook(wb.id, false, activeLabId);
             } catch (err) {
                 alert('Parsing error: ' + err.message);
+            }
+        }
+
+        // ==========================================
+        // STEP REORDERING LOGIC
+        // ==========================================
+        function moveStepUp(btn) {
+            const currentItem = btn.closest('.step-item');
+            const previousItem = currentItem.previousElementSibling;
+            if (previousItem) {
+                currentItem.parentNode.insertBefore(currentItem, previousItem);
+            }
+        }
+
+        function moveStepDown(btn) {
+            const currentItem = btn.closest('.step-item');
+            const nextItem = currentItem.nextElementSibling;
+            if (nextItem) {
+                // insertBefore nextItem.nextElementSibling safely acts as an "insertAfter"
+                currentItem.parentNode.insertBefore(nextItem, currentItem);
             }
         }
 

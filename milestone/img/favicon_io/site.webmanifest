@@ -1,6 +1,7 @@
 {
     "name": "Milestone",
     "short_name": "milestone",
+    "start_url": "/myapps/milestone",
     "icons": [
         {
             "src": "https://devnamdev2003.github.io/myapps/milestone/img/favicon_io/favicon-16x16.png",

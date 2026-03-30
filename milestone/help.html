@@ -4,12 +4,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Help & Support | Milestone Tracker</title>
+    <title>Milestone | Complete Overview & Guide</title>
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="description"
+        content="Track your learning journey, manage subjects, and check off modules with Milestone. The ultimate interactive tracker for students, developers, and lifelong learners.">
+    <meta name="keywords"
+        content="Milestone, Learning Tracker, Study Progress, Skill Tracker, Course Management, Education App, Student Productivity, Task Checklist">
+    <meta name="author" content="Dev Namdev">
+    <meta name="robots" content="index, follow">
 
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://devnamdev2003.github.io/myapps/milestone/">
+    <meta property="og:title" content="Milestone | Interactive Learning Tracker">
+    <meta property="og:description"
+        content="Visualize your progress and stay consistent with your learning goals. Manage your workbooks and modules in one sleek, interactive dashboard.">
+    <meta property="og:image" content="https://devnamdev2003.github.io/myapps/milestone/img/meta.png">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://devnamdev2003.github.io/myapps/milestone/">
+    <meta property="twitter:title" content="Milestone | Interactive Learning Tracker">
+    <meta property="twitter:description"
+        content="Break down complex subjects into achievable steps. Track your learning milestones with ease.">
+    <meta property="twitter:image" content="https://devnamdev2003.github.io/myapps/milestone/img/meta.png">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="./img/favicon_io/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./img/favicon_io/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./img/favicon_io/favicon-16x16.png" />
+    <link rel="manifest" href="./img/favicon_io/site.webmanifest" />
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -46,25 +70,36 @@
         }
 
         /* Sidebar active link styling */
+        .nav-link {
+            border-left: 2px solid transparent;
+        }
+
         .nav-link.active {
             color: #3b82f6;
             background-color: #eff6ff;
-            font-weight: 700;
-            border-left-width: 4px;
+            font-weight: 600;
             border-left-color: #3b82f6;
         }
 
         .dark .nav-link.active {
             background-color: rgba(59, 130, 246, 0.1);
         }
+
+        /* Gradient Text */
+        .text-gradient {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
     </style>
 </head>
 
 <body
-    class="bg-app-bg dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans antialiased h-screen flex flex-col overflow-hidden transition-colors duration-200">
+    class="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans antialiased h-screen flex flex-col overflow-hidden transition-colors duration-200">
 
     <!-- Header -->
-    <header class="bg-white dark:bg-slate-800 shadow-sm border-b border-slate-200 dark:border-slate-700 z-30 shrink-0">
+    <header
+        class="bg-white dark:bg-slate-900/80 backdrop-blur-md shadow-sm border-b border-slate-200 dark:border-slate-800 z-30 shrink-0 sticky top-0">
         <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <button id="mobileMenuBtn"
@@ -72,7 +107,7 @@
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
                 <div class="flex items-center space-x-2 text-brand">
-                    <svg class="w-8 h-8" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg class="w-7 h-7" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M10 24L18 32L34 8" stroke="currentColor" stroke-width="4" stroke-linecap="round"
                             stroke-linejoin="round" />
                         <circle cx="10" cy="24" r="3" fill="currentColor" />
@@ -80,17 +115,17 @@
                         <circle cx="34" cy="8" r="4" fill="currentColor" />
                     </svg>
                     <span class="text-xl font-black text-slate-900 dark:text-white tracking-tight">Milestone <span
-                            class="text-sm font-bold text-slate-400 font-normal">Help Center</span></span>
+                            class="text-sm font-semibold text-brand/80 ml-1 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">Guide</span></span>
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
                 <a href="index.html"
-                    class="hidden sm:flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-brand dark:text-slate-300 transition-colors">
-                    <i class="fa-solid fa-arrow-left"></i> Back to App
+                    class="hidden sm:flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-brand dark:text-slate-300 transition-colors">
+                    Open App <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
                 </a>
                 <button onclick="toggleDarkMode()"
-                    class="p-2 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition">
+                    class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
                     <i id="themeIcon" class="fa-solid fa-moon"></i>
                 </button>
             </div>
@@ -106,485 +141,559 @@
 
         <!-- Sidebar Navigation -->
         <aside id="sidebar"
-            class="fixed inset-y-0 left-0 top-16 z-20 w-72 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transform -translate-x-full lg:translate-x-0 lg:static lg:block transition-transform duration-300 overflow-y-auto">
+            class="fixed inset-y-0 left-0 top-16 z-20 w-72 bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transform -translate-x-full lg:translate-x-0 lg:static lg:block transition-transform duration-300 overflow-y-auto">
             <nav class="p-6 space-y-8 text-sm">
-                <!-- Getting Started -->
+                <!-- Welcome -->
                 <div>
-                    <h3 class="font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 text-xs">
-                        Getting Started</h3>
-                    <ul class="space-y-1">
-                        <li><a href="#intro"
-                                class="nav-link block px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">What
-                                is Milestone?</a></li>
-                        <li><a href="#core-concepts"
-                                class="nav-link block px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">Core
-                                Concepts</a></li>
+                    <h3
+                        class="font-bold text-slate-900 dark:text-white mb-3 uppercase tracking-wider text-xs text-slate-400">
+                        Welcome</h3>
+                    <ul class="space-y-1 border-l border-slate-200 dark:border-slate-800 ml-2">
+                        <li><a href="#meet-milestone"
+                                class="nav-link block pl-4 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Meet
+                                Milestone</a></li>
+                        <li><a href="#why-milestone"
+                                class="nav-link block pl-4 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Why
+                                Milestone?</a></li>
+                        <li><a href="#how-it-works"
+                                class="nav-link block pl-4 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">How
+                                it Works</a></li>
                     </ul>
                 </div>
 
-                <!-- Managing Workbooks -->
+                <!-- Features -->
                 <div>
-                    <h3 class="font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 text-xs">
-                        Workbooks</h3>
-                    <ul class="space-y-1">
-                        <li><a href="#create-workbook"
-                                class="nav-link block px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">Creating
-                                a Workbook</a></li>
-                        <li><a href="#custom-terminology"
-                                class="nav-link block px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">Custom
-                                Terminology</a></li>
-                        <li><a href="#edit-delete-workbook"
-                                class="nav-link block px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">Editing
-                                & Deleting</a></li>
+                    <h3
+                        class="font-bold text-slate-900 dark:text-white mb-3 uppercase tracking-wider text-xs text-slate-400">
+                        The Features</h3>
+                    <ul class="space-y-1 border-l border-slate-200 dark:border-slate-800 ml-2">
+                        <li><a href="#customization"
+                                class="nav-link block pl-4 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Customizing
+                                Your Space</a></li>
+                        <li><a href="#rich-content"
+                                class="nav-link block pl-4 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Rich
+                                Text & Markdown</a></li>
+                        <li><a href="#markdown-cheatsheet"
+                                class="nav-link block pl-4 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Markdown
+                                Cheatsheet</a></li>
+                        <li><a href="#tracking"
+                                class="nav-link block pl-4 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Visualizing
+                                Progress</a></li>
                     </ul>
                 </div>
 
-                <!-- Categories & Modules -->
+                <!-- Magic & Inspiration -->
                 <div>
-                    <h3 class="font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 text-xs">
-                        Categories & Modules</h3>
-                    <ul class="space-y-1">
-                        <li><a href="#add-module"
-                                class="nav-link block px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">Adding
-                                Modules</a></li>
-                        <li><a href="#manage-categories"
-                                class="nav-link block px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">Managing
-                                Categories</a></li>
-                        <li><a href="#module-steps"
-                                class="nav-link block px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">Steps
-                                & Markdown</a></li>
-                    </ul>
-                </div>
-
-                <!-- Tracking & Data -->
-                <div>
-                    <h3 class="font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 text-xs">
-                        Tracking & Data</h3>
-                    <ul class="space-y-1">
-                        <li><a href="#progress-tracking"
-                                class="nav-link block px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">Progress
-                                Tracking</a></li>
-                        <li><a href="#data-import"
-                                class="nav-link block px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">Importing
-                                Data (JSON)</a></li>
-                        <li><a href="#global-backup"
-                                class="nav-link block px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">Global
-                                Backup & Restore</a></li>
-                    </ul>
-                </div>
-
-                <!-- Inspiration & AI -->
-                <div>
-                    <h3 class="font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3 text-xs">
-                        Inspiration & AI</h3>
-                    <ul class="space-y-1">
-                        <li><a href="#ai-generation"
-                                class="nav-link block px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">Supercharge
-                                with AI</a></li>
-                        <li><a href="#creative-uses"
-                                class="nav-link block px-3 py-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">Creative
-                                Ways to Learn</a></li>
+                    <h3
+                        class="font-bold text-slate-900 dark:text-white mb-3 uppercase tracking-wider text-xs text-slate-400">
+                        Level Up</h3>
+                    <ul class="space-y-1 border-l border-slate-200 dark:border-slate-800 ml-2">
+                        <li><a href="#ai-magic"
+                                class="nav-link block pl-4 py-1.5 text-brand font-bold hover:text-blue-600 dark:hover:text-blue-400 transition">✨
+                                The AI Magic Trick</a></li>
+                        <li><a href="#creative-playbook"
+                                class="nav-link block pl-4 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">💡
+                                Creative Playbook</a></li>
+                        <li><a href="#data-control"
+                                class="nav-link block pl-4 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">Offline,
+                                Sharing & Privacy</a></li>
                     </ul>
                 </div>
             </nav>
         </aside>
 
         <!-- Main Content Area -->
-        <main class="flex-1 overflow-y-auto bg-white dark:bg-slate-900 scroll-smooth">
+        <main class="flex-1 overflow-y-auto bg-white dark:bg-slate-900 scroll-smooth relative">
             <div class="max-w-4xl mx-auto p-6 sm:p-10 lg:p-12 pb-32">
 
                 <!-- Hero -->
                 <div class="mb-16 text-center lg:text-left">
-                    <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-4">
-                        How can we help you?</h1>
-                    <p class="text-lg text-slate-500 dark:text-slate-400">Everything you need to know about setting up
-                        and using Milestone to crush your learning goals.</p>
+                    <h1
+                        class="text-4xl sm:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6 leading-tight">
+                        Unlock the full power of <br class="hidden sm:block" />
+                        <span class="bg-gradient-to-r from-blue-500 to-indigo-500 text-gradient">Milestone.</span>
+                    </h1>
+                    <p class="text-xl text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+                        Discover how to turn a simple task tracker into a dynamic learning hub, a flashcard system, or
+                        an AI-generated masterclass.
+                    </p>
                 </div>
 
                 <!-- CONTENT SECTIONS -->
 
-                <!-- 1. Intro -->
-                <section id="intro" class="mb-16 pt-8 border-t border-slate-100 dark:border-slate-800">
+                <!-- 1. Introduction -->
+                <section id="meet-milestone" class="mb-16 scroll-mt-24">
                     <div class="flex items-center gap-4 mb-6">
                         <div
                             class="w-12 h-12 rounded-2xl bg-brand/10 text-brand flex items-center justify-center text-xl shrink-0">
                             <i class="fa-solid fa-rocket"></i>
                         </div>
-                        <h2 class="text-3xl font-bold text-slate-800 dark:text-white">What is Milestone?</h2>
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Meet Milestone</h2>
                     </div>
-                    <div class="prose prose-slate dark:prose-invert max-w-none text-slate-600 dark:text-slate-300">
-                        <p><strong>Milestone</strong> is an interactive learning and task tracker designed for students,
-                            developers, and lifelong learners. Instead of a flat to-do list, Milestone lets you
-                            structure your goals hierarchically, ensuring you can break down complex subjects into
-                            achievable, trackable steps.</p>
+                    <div
+                        class="prose prose-slate dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 text-lg">
+                        <p>Standard to-do lists fall apart when you're trying to achieve something complex—like learning
+                            Python, reading a 500-page book, or prepping for a massive interview. They just aren't built
+                            for deep, structured learning.</p>
+                        <p><strong>That's why we built Milestone.</strong></p>
+                        <p>Milestone lets you build a beautiful, hierarchical curriculum. It tracks your progress at
+                            every level, supports rich markdown notes, and best of all: it can be completely automated
+                            using AI.</p>
                     </div>
                 </section>
 
-                <!-- Core Concepts -->
-                <section id="core-concepts" class="mb-16">
-                    <h3 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Core Concepts</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <!-- 1.5 Why Milestone? -->
+                <section id="why-milestone" class="mb-20 scroll-mt-24">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">Why not just use Notion or
+                        Trello?</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div
-                            class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-700">
-                            <i class="fa-solid fa-book text-brand text-2xl mb-3"></i>
-                            <h4 class="font-bold text-lg text-slate-800 dark:text-white mb-2">Workbooks</h4>
-                            <p class="text-sm text-slate-600 dark:text-slate-400">The highest level container. Think of
-                                this as a "Course", "Subject", or "Project" (e.g., <em>Spring Boot Masterclass</em>).
+                            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2"><i
+                                    class="fa-solid fa-layer-group text-blue-500 mr-2"></i> Built for Hierarchy</h3>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm">Most task apps are flat lists or
+                                kanban boards. Milestone enforces a strict 3-tier system (Category &rarr; Module &rarr;
+                                Step). This naturally maps to courses, books, and study guides without getting messy.
                             </p>
                         </div>
                         <div
-                            class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-700">
-                            <i class="fa-solid fa-layer-group text-brand text-2xl mb-3"></i>
-                            <h4 class="font-bold text-lg text-slate-800 dark:text-white mb-2">Categories</h4>
-                            <p class="text-sm text-slate-600 dark:text-slate-400">Logical groupings within a workbook to
-                                keep things organized (e.g., <em>Beginner</em>, <em>Advanced</em>).</p>
+                            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2"><i
+                                    class="fa-solid fa-chart-line text-emerald-500 mr-2"></i> Granular Progress</h3>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm">Instead of just "To Do" and "Done",
+                                Milestone gives you exact percentage readouts at the Module, Category, and Global
+                                levels. You always know exactly how close you are to the finish line.</p>
                         </div>
                         <div
-                            class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-700">
-                            <i class="fa-solid fa-puzzle-piece text-brand text-2xl mb-3"></i>
-                            <h4 class="font-bold text-lg text-slate-800 dark:text-white mb-2">Modules & Steps</h4>
-                            <p class="text-sm text-slate-600 dark:text-slate-400">A module is a specific topic
-                                containing actionable check-off steps (e.g., <em>Setup Database</em> module with steps
-                                to install and config).</p>
+                            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2"><i
+                                    class="fa-solid fa-bolt text-amber-500 mr-2"></i> Lightning Fast & Offline</h3>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm">Because it uses your browser's local
+                                storage, there is zero loading time. Click a checkbox, and the UI updates instantly. You
+                                can use it on an airplane or train without Wi-Fi.</p>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2"><i
+                                    class="fa-solid fa-brain text-purple-500 mr-2"></i> AI-Ready Imports</h3>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm">Milestone was designed with a generic
+                                JSON parser. You can ask an AI to generate a 50-step course, paste the code into
+                                Milestone, and it builds the entire UI instantly. No manual typing required.</p>
                         </div>
                     </div>
                 </section>
 
-                <!-- 2. Workbooks -->
-                <section id="create-workbook" class="mb-16 pt-8 border-t border-slate-100 dark:border-slate-800">
-                    <div class="flex items-center gap-4 mb-6">
+                <!-- 2. How it Works -->
+                <section id="how-it-works" class="mb-20 scroll-mt-24">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6">How it Works (The 3 Tiers)</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div
-                            class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-xl shrink-0">
-                            <i class="fa-solid fa-book-open"></i>
+                            class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl shadow-sm">
+                            <div
+                                class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black mb-4">
+                                1</div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Workbooks</h3>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm">The overarching container for your
+                                goal. Example: "Full Stack Development Bootcampt".</p>
                         </div>
-                        <h2 class="text-3xl font-bold text-slate-800 dark:text-white">Managing Workbooks</h2>
-                    </div>
-
-                    <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-3">Creating a Workbook</h3>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">From the main dashboard, click the <strong
-                            class="text-brand">New Workbook</strong> button. You will be prompted to provide:</p>
-                    <ul class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300 mb-8">
-                        <li><strong>Name:</strong> The title of your course or project.</li>
-                        <li><strong>Description:</strong> A brief overview of what this workbook covers.</li>
-                        <li><strong>Icon:</strong> A FontAwesome class (e.g., <code>fa-brands fa-java</code>) to
-                            represent the workbook visually.</li>
-                        <li><strong>Theme Color:</strong> Pick a custom color. The entire UI (progress bars, buttons,
-                            hover states) inside this workbook will adapt to this color!</li>
-                    </ul>
-
-                    <div id="custom-terminology"
-                        class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-6 mb-8">
-                        <h4 class="flex items-center text-blue-800 dark:text-blue-300 font-bold text-lg mb-2"><i
-                                class="fa-solid fa-language mr-2"></i> Custom Terminology</h4>
-                        <p class="text-blue-700 dark:text-blue-400 text-sm mb-3">One of Milestone's most powerful
-                            features is adapting to your workflow. In the Workbook creation modal, you can change what
-                            you call "Modules" and "Steps".</p>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                            <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm">
-                                <span class="text-xs font-bold text-slate-400 uppercase">For a Coding Course</span>
-                                <div class="mt-2 text-sm text-slate-700 dark:text-slate-300">Module Term:
-                                    <strong>Lab</strong><br>Item Term: <strong>Checkpoint</strong>
-                                </div>
-                            </div>
-                            <div class="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm">
-                                <span class="text-xs font-bold text-slate-400 uppercase">For Reading a Book</span>
-                                <div class="mt-2 text-sm text-slate-700 dark:text-slate-300">Module Term:
-                                    <strong>Chapter</strong><br>Item Term: <strong>Page</strong>
-                                </div>
-                            </div>
+                        <div
+                            class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl shadow-sm">
+                            <div
+                                class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black mb-4">
+                                2</div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Categories</h3>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm">Visual sections inside your workbook
+                                to keep things tidy. Example: "Frontend", "Backend", "Databases".</p>
+                        </div>
+                        <div
+                            class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-2xl shadow-sm">
+                            <div
+                                class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 flex items-center justify-center font-black mb-4">
+                                3</div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Modules & Steps</h3>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm">The actual actionable items. Example:
+                                "Module: React Hooks", "Step 1: Learn useState".</p>
                         </div>
                     </div>
-
-                    <h3 id="edit-delete-workbook" class="text-xl font-bold text-slate-800 dark:text-white mb-3">Editing
-                        & Deleting</h3>
-                    <p class="text-slate-600 dark:text-slate-400">On the dashboard, hover over any workbook card. In the
-                        top right corner of the card, you will see a pencil icon (Edit) and a trash icon (Delete).
-                        <em>Note: Deleting a workbook permanently removes all categories, modules, and progress inside
-                            it.</em>
-                    </p>
                 </section>
 
-                <!-- 3. Categories & Modules -->
-                <section id="add-module" class="mb-16 pt-8 border-t border-slate-100 dark:border-slate-800">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div
-                            class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-xl shrink-0">
-                            <i class="fa-solid fa-cubes"></i>
-                        </div>
-                        <h2 class="text-3xl font-bold text-slate-800 dark:text-white">Categories & Modules</h2>
-                    </div>
-
-                    <p class="text-slate-600 dark:text-slate-400 mb-6">Once inside a Workbook, you build your curriculum
-                        using Modules, which are grouped by Categories.</p>
-
-                    <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-3">Adding a Module</h3>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">Click <strong>"Add New [Module Term]"</strong> in
-                        the sidebar. In the modal:</p>
-                    <ol class="list-decimal pl-6 space-y-3 text-slate-600 dark:text-slate-300 mb-8">
-                        <li><strong>Category/Section:</strong> Type a new category name (e.g., "Week 1") to create it,
-                            or select an existing one from the dropdown that appears as you type.</li>
-                        <li><strong>Title & Icon:</strong> Name the specific module and give it an icon.</li>
-                        <li><strong>Description:</strong> Explain the objective of this module.</li>
-                    </ol>
-
-                    <h3 id="module-steps" class="text-xl font-bold text-slate-800 dark:text-white mb-3">Adding Steps &
-                        Using Markdown</h3>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">At the bottom of the Module form, you add the
-                        actual checklist items. Each item requires a short title, but you can also add a highly detailed
-                        Description.</p>
-
+                <!-- 3. Customization -->
+                <section id="customization" class="mb-20 scroll-mt-24">
                     <div
-                        class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-5 mb-6 relative">
-                        <span
-                            class="absolute top-0 right-0 bg-brand text-white text-[10px] font-bold px-2 py-1 rounded-bl-xl rounded-tr-xl">PRO
-                            TIP</span>
-                        <p class="text-sm text-slate-700 dark:text-slate-300"><strong>Markdown is fully supported in
-                                step descriptions!</strong><br><br> You can format text with `code blocks`, **bold
-                            text**, lists, and links. This is perfect for pasting command-line instructions, code
-                            snippets, or reference links right into your checklist.</p>
+                        class="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-3xl p-8 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                            <i class="fa-solid fa-palette text-9xl text-blue-500"></i>
+                        </div>
+                        <div class="relative z-10">
+                            <h2 class="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-4">Make it Yours: Custom
+                                Terminology</h2>
+                            <p class="text-blue-800 dark:text-blue-200 mb-6 text-lg">
+                                Not every project uses "Modules" and "Steps". When you create a Workbook, you can rename
+                                the core components so the entire app speaks your language.
+                            </p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div class="bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm p-4 rounded-xl">
+                                    <div
+                                        class="text-xs uppercase tracking-wider text-blue-500 dark:text-blue-400 font-bold mb-2">
+                                        Coding Course</div>
+                                    <div class="text-sm dark:text-white"><span class="opacity-70">Modules</span> &rarr;
+                                        <strong>Labs</strong>
+                                    </div>
+                                    <div class="text-sm dark:text-white"><span class="opacity-70">Steps</span> &rarr;
+                                        <strong>Checkpoints</strong>
+                                    </div>
+                                </div>
+                                <div class="bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm p-4 rounded-xl">
+                                    <div class="text-xs uppercase tracking-wider text-emerald-500 font-bold mb-2">
+                                        Reading a Book</div>
+                                    <div class="text-sm dark:text-white"><span class="opacity-70">Modules</span> &rarr;
+                                        <strong>Chapters</strong>
+                                    </div>
+                                    <div class="text-sm dark:text-white"><span class="opacity-70">Steps</span> &rarr;
+                                        <strong>Pages</strong>
+                                    </div>
+                                </div>
+                                <div class="bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm p-4 rounded-xl">
+                                    <div class="text-xs uppercase tracking-wider text-purple-500 font-bold mb-2">Fitness
+                                        Goal</div>
+                                    <div class="text-sm dark:text-white"><span class="opacity-70">Modules</span> &rarr;
+                                        <strong>Weeks</strong>
+                                    </div>
+                                    <div class="text-sm dark:text-white"><span class="opacity-70">Steps</span> &rarr;
+                                        <strong>Workouts</strong>
+                                    </div>
+                                </div>
+                                <div class="bg-white/80 dark:bg-slate-900/60 backdrop-blur-sm p-4 rounded-xl">
+                                    <div class="text-xs uppercase tracking-wider text-amber-500 font-bold mb-2">Project
+                                        Prep</div>
+                                    <div class="text-sm dark:text-white"><span class="opacity-70">Modules</span> &rarr;
+                                        <strong>Milestones</strong>
+                                    </div>
+                                    <div class="text-sm dark:text-white"><span class="opacity-70">Steps</span> &rarr;
+                                        <strong>Tasks</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="mt-6 text-sm text-blue-700 dark:text-blue-300 font-medium">
+                                Bonus: You also pick a custom <strong>Theme Color</strong> and <strong>Icon</strong> for
+                                every workbook, completely changing the UI's vibe when you open it.
+                            </p>
+                        </div>
                     </div>
-
-                    <p class="text-slate-600 dark:text-slate-400 mb-8"><strong>Reordering:</strong> Use the <i
-                            class="fa-solid fa-arrow-up mx-1 border border-slate-300 p-1 rounded"></i> and <i
-                            class="fa-solid fa-arrow-down mx-1 border border-slate-300 p-1 rounded"></i> arrow buttons
-                        next to a step in the form to move it up or down in the list.</p>
-
-                    <h3 id="manage-categories" class="text-xl font-bold text-slate-800 dark:text-white mb-3">Managing
-                        Categories</h3>
-                    <p class="text-slate-600 dark:text-slate-400">On the Workbook's main overview screen (the Category
-                        View), you will see cards for each Category. Hovering over the category title reveals options
-                        to:</p>
-                    <ul class="list-disc pl-6 space-y-1 text-slate-600 dark:text-slate-300">
-                        <li><i class="fa-solid fa-pen mr-2 text-blue-500"></i> Rename the entire category.</li>
-                        <li><i class="fa-solid fa-trash mr-2 text-red-500"></i> Delete the category and all modules
-                            within it.</li>
-                    </ul>
                 </section>
 
-                <!-- 4. Tracking -->
-                <section id="progress-tracking" class="mb-16 pt-8 border-t border-slate-100 dark:border-slate-800">
-                    <div class="flex items-center gap-4 mb-6">
+                <!-- 4. Markdown -->
+                <section id="rich-content" class="mb-12 scroll-mt-24">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Rich Text & Markdown</h2>
+                    <div class="prose prose-slate dark:prose-invert max-w-none text-slate-600 dark:text-slate-300">
+                        <p>A step title like "Install Dependencies" isn't always enough. Sometimes you need to remember
+                            <em>how</em> to install them.
+                        </p>
+                        <p>Milestone supports full Markdown inside the <strong>Description</strong> of every step. Just
+                            click the chevron arrow next to a step to reveal your rich notes, complete with inline code
+                            blocks, bold text, nested lists, and hyperlinks to external documentation or YouTube
+                            tutorials.</p>
+                    </div>
+                </section>
+
+                <!-- 4.5 Markdown Cheatsheet -->
+                <section id="markdown-cheatsheet" class="mb-20 scroll-mt-24">
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Quick Markdown Cheatsheet</h3>
+                    <div class="bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 shadow-lg">
+                        <div class="grid grid-cols-2 text-sm font-medium border-b border-slate-700 bg-slate-800">
+                            <div class="p-3 text-slate-300 pl-6">Type this in Description...</div>
+                            <div class="p-3 text-slate-300 pl-6 border-l border-slate-700">Get this result...</div>
+                        </div>
+                        <div class="divide-y divide-slate-800">
+                            <div class="grid grid-cols-2 text-sm">
+                                <div class="p-4 pl-6 font-mono text-slate-400">**Bold Text**</div>
+                                <div class="p-4 pl-6 border-l border-slate-700 text-white font-bold">Bold Text</div>
+                            </div>
+                            <div class="grid grid-cols-2 text-sm">
+                                <div class="p-4 pl-6 font-mono text-slate-400">*Italic Text*</div>
+                                <div class="p-4 pl-6 border-l border-slate-700 text-white italic">Italic Text</div>
+                            </div>
+                            <div class="grid grid-cols-2 text-sm">
+                                <div class="p-4 pl-6 font-mono text-slate-400">[Google](https://google.com)</div>
+                                <div class="p-4 pl-6 border-l border-slate-700"><a href="#"
+                                        class="text-blue-400 hover:underline">Google</a></div>
+                            </div>
+                            <div class="grid grid-cols-2 text-sm">
+                                <div class="p-4 pl-6 font-mono text-slate-400">`npm install react`</div>
+                                <div class="p-4 pl-6 border-l border-slate-700"><code
+                                        class="bg-slate-800 text-pink-400 px-2 py-1 rounded">npm install react</code>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 text-sm">
+                                <div class="p-4 pl-6 font-mono text-slate-400 whitespace-pre">- Item 1<br>- Item 2</div>
+                                <div class="p-4 pl-6 border-l border-slate-700 text-white">
+                                    <ul class="list-disc pl-4 m-0">
+                                        <li>Item 1</li>
+                                        <li>Item 2</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. Tracking -->
+                <section id="tracking" class="mb-20 scroll-mt-24 border-t border-slate-100 dark:border-slate-800 pt-10">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Visualizing Progress</h2>
+                    <p class="text-slate-600 dark:text-slate-400 mb-8">Nothing feels better than watching a progress bar
+                        fill up. Milestone tracks your completion automatically at three levels:</p>
+
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-brand/10 text-brand p-3 rounded-xl mt-1"><i
+                                    class="fa-solid fa-list-check"></i></div>
+                            <div>
+                                <h4 class="font-bold text-lg text-slate-900 dark:text-white">The Micro Level (Modules)
+                                </h4>
+                                <p class="text-slate-600 dark:text-slate-400">The sidebar updates your module
+                                    percentages in real-time. Hit 100%, and it turns into a satisfying green checkmark.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="bg-brand/10 text-brand p-3 rounded-xl mt-1"><i
+                                    class="fa-solid fa-layer-group"></i></div>
+                            <div>
+                                <h4 class="font-bold text-lg text-slate-900 dark:text-white">The Macro Level
+                                    (Categories)</h4>
+                                <p class="text-slate-600 dark:text-slate-400">Back out to the Workbook dashboard to see
+                                    beautiful progress bars for each category. Great for seeing if you are falling
+                                    behind in a specific area.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="bg-brand/10 text-brand p-3 rounded-xl mt-1"><i class="fa-solid fa-trophy"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg text-slate-900 dark:text-white">The Ultimate Goal
+                                    (Workbook)</h4>
+                                <p class="text-slate-600 dark:text-slate-400">Pinned to the top of your screen is the
+                                    master progress bar. Watch it glide toward 100% as you conquer your goals.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. AI MAGIC TRICK -->
+                <section id="ai-magic" class="mb-20 scroll-mt-24 pt-10">
+                    <div
+                        class="bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden">
+                        <!-- Decorative glow -->
+                        <div
+                            class="absolute top-0 right-0 w-64 h-64 bg-pink-500 rounded-full mix-blend-screen filter blur-[100px] opacity-40">
+                        </div>
+                        <div
+                            class="absolute bottom-0 left-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-screen filter blur-[100px] opacity-40">
+                        </div>
+
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div
+                                    class="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center text-2xl shrink-0 border border-white/20 shadow-inner">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                </div>
+                                <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">The AI Magic
+                                    Trick</h2>
+                            </div>
+
+                            <p class="text-lg text-purple-200 mb-8 max-w-2xl leading-relaxed">
+                                Don't want to type out a 50-step curriculum by hand? Let AI do the heavy lifting.
+                                Milestone has a built-in JSON importer that lets you paste generated courses directly
+                                from ChatGPT, Claude, or Gemini in seconds.
+                            </p>
+
+                            <div class="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 sm:p-8">
+                                <h4 class="text-white font-bold mb-4 flex items-center"><i
+                                        class="fa-solid fa-robot mr-3 text-pink-400"></i> Try this prompt right now:
+                                </h4>
+
+                                <div class="relative group">
+                                    <div
+                                        class="absolute -inset-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
+                                    </div>
+                                    <div
+                                        class="relative bg-slate-900 border border-slate-700 rounded-xl p-5 text-sm sm:text-base text-slate-300 font-mono leading-relaxed">
+                                        I want to master <strong class="text-white bg-white/10 px-1 rounded">[Insert Any
+                                            Topic]</strong>. Create a comprehensive learning roadmap for me with 20+
+                                        distinct steps, organized into logical categories from Beginner to Advanced.
+                                        <br><br>
+                                        Output the result strictly as a raw JSON array matching this exact schema format
+                                        (do not include markdown formatting or extra text outside the JSON):
+                                        <br><br>
+                                        <span class="text-slate-500 italic">[Click "Import" in Milestone to get the
+                                            Sample JSON, and paste it here]</span>
+                                    </div>
+                                </div>
+
+                                <div class="mt-8 flex items-center justify-between border-t border-white/10 pt-6">
+                                    <p class="text-sm font-medium text-pink-300">
+                                        Paste the AI's response into the Milestone Import box and watch your screen
+                                        populate with a full course instantly.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 7. Creative Playbook -->
+                <section id="creative-playbook" class="mb-20 scroll-mt-24">
+                    <div class="flex items-center gap-4 mb-8">
                         <div
                             class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-xl shrink-0">
-                            <i class="fa-solid fa-chart-pie"></i>
-                        </div>
-                        <h2 class="text-3xl font-bold text-slate-800 dark:text-white">Progress Tracking</h2>
-                    </div>
-
-                    <p class="text-slate-600 dark:text-slate-400 mb-6">Milestone tracks your completion at three
-                        different levels automatically:</p>
-                    <div class="space-y-4">
-                        <div class="flex gap-4 items-start">
-                            <div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg mt-1"><i
-                                    class="fa-solid fa-1 text-slate-500"></i></div>
-                            <div>
-                                <h4 class="font-bold text-slate-800 dark:text-white">Module Level</h4>
-                                <p class="text-sm text-slate-600 dark:text-slate-400">In the sidebar, next to each
-                                    module, you'll see a percentage (e.g., 50%). When all steps in a module are checked,
-                                    it turns into a green checkmark.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4 items-start">
-                            <div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg mt-1"><i
-                                    class="fa-solid fa-2 text-slate-500"></i></div>
-                            <div>
-                                <h4 class="font-bold text-slate-800 dark:text-white">Category Level</h4>
-                                <p class="text-sm text-slate-600 dark:text-slate-400">On the Workbook home screen, each
-                                    Category card features a progress bar showing how many steps across all its modules
-                                    have been completed.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4 items-start">
-                            <div class="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg mt-1"><i
-                                    class="fa-solid fa-3 text-slate-500"></i></div>
-                            <div>
-                                <h4 class="font-bold text-slate-800 dark:text-white">Workbook Level</h4>
-                                <p class="text-sm text-slate-600 dark:text-slate-400">The main progress bar fixed at the
-                                    top of the Workbook view tracks your overall completion of the entire course.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 5. Data & Import/Export -->
-                <section id="data-import" class="mb-16 pt-8 border-t border-slate-100 dark:border-slate-800">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div
-                            class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center text-xl shrink-0">
-                            <i class="fa-solid fa-database"></i>
-                        </div>
-                        <h2 class="text-3xl font-bold text-slate-800 dark:text-white">Data & Automation</h2>
-                    </div>
-
-                    <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-3">Importing JSON to a Workbook</h3>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">Instead of typing out massive courses manually,
-                        you can import data using a JSON array. Inside a Workbook, click the <strong>Import</strong>
-                        button in the sidebar footer.</p>
-
-                    <div class="bg-slate-900 rounded-xl overflow-hidden mb-6">
-                        <div class="bg-slate-800 px-4 py-2 text-xs font-mono text-slate-400 border-b border-slate-700">
-                            example.json</div>
-                        <pre class="p-4 text-xs sm:text-sm text-green-400 overflow-x-auto"><code>[
-  {
-    "category": "Week 1",
-    "labs": [
-      {
-        "title": "Introduction",
-        "icon": "fa-solid fa-star",
-        "description": "Welcome module",
-        "checkpoints": [
-          { 
-            "text": "Read syllabus", 
-            "description": "Find it on the portal." 
-          }
-        ]
-      }
-    ]
-  }
-]</code></pre>
-                    </div>
-                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-8"><em>Note: The JSON keys for the arrays
-                            (e.g., "labs", "checkpoints") dynamically adapt to whatever custom terminology you set for
-                            that workbook! Milestone is smart enough to find the arrays.</em></p>
-
-                    <h3 id="global-backup" class="text-xl font-bold text-slate-800 dark:text-white mb-3">Global Backup &
-                        Restore</h3>
-                    <p class="text-slate-600 dark:text-slate-400 mb-4">Because Milestone runs entirely in your browser
-                        (Local Storage), it's highly recommended to export your data periodically.</p>
-                    <ul class="list-disc pl-6 space-y-2 text-slate-600 dark:text-slate-300">
-                        <li>Click the <strong>Settings Gear <i class="fa-solid fa-gear"></i></strong> icon in the top
-                            right header.</li>
-                        <li>Click <strong>Export All Data</strong> to download a `.json` backup of all workbooks,
-                            modules, and completion statuses.</li>
-                        <li>Use <strong>Import Data</strong> to upload that file to a different browser or device to
-                            restore your state.</li>
-                        <li><strong>Factory Reset</strong> completely wipes your local storage. Use with extreme
-                            caution!</li>
-                    </ul>
-                </section>
-
-                <!-- 6. AI Generation -->
-                <section id="ai-generation" class="mb-16 pt-8 border-t border-slate-100 dark:border-slate-800">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div
-                            class="w-12 h-12 rounded-2xl bg-pink-500/10 text-pink-500 flex items-center justify-center text-xl shrink-0">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        </div>
-                        <h2 class="text-3xl font-bold text-slate-800 dark:text-white">Supercharge with AI</h2>
-                    </div>
-
-                    <p class="text-slate-600 dark:text-slate-400 mb-6">Don't want to type out a massive curriculum
-                        manually? You can use AI (like ChatGPT, Gemini, or Claude) to generate a complete course roadmap
-                        and import it into Milestone in seconds!</p>
-
-                    <div
-                        class="bg-pink-50 dark:bg-pink-900/10 border border-pink-100 dark:border-pink-900/30 rounded-2xl p-6">
-                        <h4 class="font-bold text-pink-800 dark:text-pink-400 mb-3 text-lg"><i
-                                class="fa-solid fa-robot mr-2"></i> The AI Workflow</h4>
-                        <ol class="list-decimal pl-6 space-y-3 text-pink-900 dark:text-pink-300">
-                            <li><strong>Copy the Sample JSON:</strong> Go to your Milestone Workbook, click
-                                <strong>Import</strong>, and copy the "Sample JSON Format" displayed in the dropdown.
-                            </li>
-                            <li><strong>Prompt the AI:</strong> Go to your favorite AI and paste the sample. Write a
-                                prompt like: <br><em>"I am learning [Topic]. Create a 20-step learning roadmap for me.
-                                    Output the result strictly using this JSON structure: [Paste JSON]."</em></li>
-                            <li><strong>Copy & Paste:</strong> Copy the JSON code the AI gives you, return to Milestone,
-                                paste it into the Import text box, and click <strong>Import JSON</strong>.</li>
-                        </ol>
-                        <p class="mt-4 text-sm font-medium text-pink-700 dark:text-pink-500">✨ Just like magic, your
-                            workbook will instantly populate with categories, modules, and detailed checklists!</p>
-                    </div>
-                </section>
-
-                <!-- 7. Creative Uses -->
-                <section id="creative-uses" class="mb-16 pt-8 border-t border-slate-100 dark:border-slate-800">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div
-                            class="w-12 h-12 rounded-2xl bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 flex items-center justify-center text-xl shrink-0">
                             <i class="fa-solid fa-lightbulb"></i>
                         </div>
-                        <h2 class="text-3xl font-bold text-slate-800 dark:text-white">Creative Ways to Learn</h2>
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white">Creative Playbook</h2>
                     </div>
 
-                    <p class="text-slate-600 dark:text-slate-400 mb-8">Because you can change the terminology and use
-                        markdown in descriptions, Milestone is incredibly flexible. Here are a few ways you can
-                        customize it for different tasks:</p>
+                    <p class="text-slate-600 dark:text-slate-400 mb-8 text-lg">Because you can change the terminology
+                        and use markdown, Milestone is a chameleon. Here are some of our favorite ways to hack the
+                        system:</p>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Use Case 1 -->
+                        <!-- Flashcards -->
                         <div
-                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition">
-                            <h4 class="font-bold text-lg text-slate-800 dark:text-white mb-2"><i
-                                    class="fa-solid fa-clipboard-check text-brand mr-2"></i> Standard Learning Checklist
-                            </h4>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Break down a large subject (like
-                                learning a programming language or studying for an exam) into easily digestible chunks.
-                            </p>
+                            class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-3"><i
+                                    class="fa-solid fa-comments text-emerald-500 mr-2"></i> Q&A Flashcards</h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-5">Prepping for an interview? Put
+                                the question in the Step Title, and hide the answer in the Markdown description. Expand
+                                the step to reveal the answer, and check it off if you get it right!</p>
                             <div
-                                class="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                                <div><span class="font-bold text-slate-500">Module:</span> Variables & Data Types</div>
-                                <div class="mt-1"><span class="font-bold text-slate-500">Step:</span> Learn what a
-                                    String is</div>
-                            </div>
-                        </div>
-
-                        <!-- Use Case 2 -->
-                        <div
-                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition">
-                            <h4 class="font-bold text-lg text-slate-800 dark:text-white mb-2"><i
-                                    class="fa-solid fa-comments text-emerald-500 mr-2"></i> Interview Q&A Flashcards
-                            </h4>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Use the expanding description
-                                area to hide answers. Test yourself by looking at the step title, then click to reveal
-                                the answer!</p>
-                            <div
-                                class="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                                <div><span class="font-bold text-slate-500">Step Title (Question):</span> What is
-                                    Closure in JS?</div>
-                                <div class="mt-1"><span class="font-bold text-slate-500">Description (Answer):</span>
-                                    [Hidden text explaining closure]</div>
-                            </div>
-                        </div>
-
-                        <!-- Use Case 3 -->
-                        <div
-                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition">
-                            <h4 class="font-bold text-lg text-slate-800 dark:text-white mb-2"><i
-                                    class="fa-solid fa-gamepad text-purple-500 mr-2"></i> Interactive Quizzes</h4>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Make learning fun by turning a
-                                workbook into a quiz. Use the module as the question and the steps as options.</p>
-                            <div
-                                class="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                                <div><span class="font-bold text-slate-500">Module (Question):</span> Which planet is
-                                    closest to the Sun?</div>
-                                <div class="mt-1"><span class="font-bold text-slate-500">Step (Option A):</span> Venus
+                                class="text-xs bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                <div><span class="font-bold text-slate-400 uppercase">Question (Title):</span> <span
+                                        class="text-slate-800 dark:text-slate-200 font-medium text-sm ml-2">What is a
+                                        Closure?</span></div>
+                                <div class="mt-3"><span class="font-bold text-slate-400 uppercase">Answer (Desc):</span>
+                                    <span class="text-slate-500 italic ml-2">[Hidden until you click the
+                                        arrow...]</span>
                                 </div>
-                                <div class="mt-1"><span class="font-bold text-slate-500">Description:</span> Incorrect!
-                                    Venus is the second planet.</div>
                             </div>
                         </div>
 
-                        <!-- Use Case 4 -->
+                        <!-- RPG Tracker -->
                         <div
-                            class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition">
-                            <h4 class="font-bold text-lg text-slate-800 dark:text-white mb-2"><i
-                                    class="fa-solid fa-list-check text-amber-500 mr-2"></i> Daily Habit Tracker</h4>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Set up a workbook for "Morning
-                                Routine". Make the Modules the days of the week, and the steps your daily habits.</p>
+                            class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-3"><i
+                                    class="fa-solid fa-dragon text-red-500 mr-2"></i> RPG Quest Tracker</h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-5">Gamify your life. Set your Module
+                                Term to <strong>"Quest"</strong> and Item Term to <strong>"Objective"</strong>. Give
+                                your workbook a cool color and a sword icon.</p>
                             <div
-                                class="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                                <div><span class="font-bold text-slate-500">Module:</span> Monday</div>
-                                <div class="mt-1"><span class="font-bold text-slate-500">Steps:</span> Drink Water,
-                                    Meditate, Read 10 Pages</div>
+                                class="text-xs bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                <div><span class="font-bold text-slate-400 uppercase">Category:</span> <span
+                                        class="text-slate-800 dark:text-slate-200 font-medium text-sm ml-2">Real World
+                                        Chores</span></div>
+                                <div class="mt-2"><span class="font-bold text-slate-400 uppercase">Quest:</span> <span
+                                        class="text-slate-800 dark:text-slate-200 font-medium text-sm ml-2">Clean the
+                                        Kitchen</span></div>
+                                <div class="mt-2"><span class="font-bold text-slate-400 uppercase">Objectives:</span>
+                                    <span class="text-slate-800 dark:text-slate-200 font-medium text-sm ml-2">Slay the
+                                        dishes, empty the trash.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Language Learning -->
+                        <div
+                            class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-3"><i
+                                    class="fa-solid fa-earth-americas text-blue-500 mr-2"></i> Language Vocab Builder
+                            </h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-5">Group words by category (e.g.,
+                                "Food", "Travel"). Use the Step Title for the foreign word, and the description for the
+                                translation and a practice sentence.</p>
+                            <div
+                                class="text-xs bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                <div><span class="font-bold text-slate-400 uppercase">Module:</span> <span
+                                        class="text-slate-800 dark:text-slate-200 font-medium text-sm ml-2">Dining
+                                        Out</span></div>
+                                <div class="mt-2"><span class="font-bold text-slate-400 uppercase">Word:</span> <span
+                                        class="text-slate-800 dark:text-slate-200 font-medium text-sm ml-2">La
+                                        Cuenta</span></div>
+                                <div class="mt-2"><span class="font-bold text-slate-400 uppercase">Notes:</span> <span
+                                        class="text-slate-800 dark:text-slate-200 font-medium text-sm ml-2">"The bill".
+                                        Usage: La cuenta, por favor.</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Habit Tracker -->
+                        <div
+                            class="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-3"><i
+                                    class="fa-solid fa-calendar-check text-amber-500 mr-2"></i> Daily Routine Tracker
+                            </h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-5">Create Categories for "Weeks".
+                                Create Modules for "Days" (Monday, Tuesday). Set your steps to habits: Drink Water,
+                                Meditate, Code for 1 Hour.</p>
+                            <div
+                                class="text-xs bg-slate-50 dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                <div class="flex gap-2 items-center"><i
+                                        class="fa-solid fa-check-square text-brand text-lg"></i> <span
+                                        class="text-slate-800 dark:text-slate-200 font-medium text-sm">Drink 2L
+                                        Water</span></div>
+                                <div class="flex gap-2 items-center mt-2"><i
+                                        class="fa-solid fa-square text-slate-300 dark:text-slate-600 text-lg"></i> <span
+                                        class="text-slate-800 dark:text-slate-200 font-medium text-sm">Read 10
+                                        Pages</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 8. Data -->
+                <section id="data-control"
+                    class="mb-16 scroll-mt-24 border-t border-slate-100 dark:border-slate-800 pt-10">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">Offline, Sharing & Privacy</h2>
+                    <div class="prose prose-slate dark:prose-invert max-w-none text-slate-600 dark:text-slate-300">
+                        <p>Milestone is designed to be fully owned by <em>you</em>. It operates 100% in your browser.
+                            There is no cloud database watching you, which unlocks some incredible benefits:</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6 not-prose">
+                            <div
+                                class="bg-slate-50 dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <i class="fa-solid fa-wifi text-slate-400 mb-2 text-xl"></i>
+                                <h4 class="font-bold text-slate-900 dark:text-white">Works Offline</h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Take your laptop on an
+                                    airplane or the subway. Milestone requires zero internet connection to read, edit,
+                                    or check off your progress.</p>
+                            </div>
+                            <div
+                                class="bg-slate-50 dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <i class="fa-solid fa-share-nodes text-slate-400 mb-2 text-xl"></i>
+                                <h4 class="font-bold text-slate-900 dark:text-white">Share with Friends</h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">Because workbooks are just
+                                    JSON data, you can build a masterpiece curriculum, export it, and email the file to
+                                    a classmate or friend to import!</p>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/30 rounded-xl p-5 mt-6 flex gap-4 not-prose">
+                            <i class="fa-solid fa-triangle-exclamation text-yellow-600 dark:text-yellow-500 mt-1"></i>
+                            <div class="text-sm text-yellow-800 dark:text-yellow-400">
+                                <strong>Important Warning:</strong> Because your data lives in your browser cache,
+                                clearing your history or browser data might wipe your workbooks!
+                                <br><br>
+                                Always use the <strong>Settings <i class="fa-solid fa-gear"></i></strong> menu in the
+                                top right of the main app to regularly <strong>Export All Data</strong> as a backup file
+                                to keep your progress safe.
                             </div>
                         </div>
                     </div>
                 </section>
 
                 <hr class="border-slate-200 dark:border-slate-800 my-10">
-                <div class="text-center text-slate-500 dark:text-slate-400 text-sm">
-                    <p>Milestone Application &copy; 2024</p>
-                    <p class="mt-2">Have a productive learning journey!</p>
+                <div
+                    class="flex flex-col sm:flex-row justify-between items-center text-slate-500 dark:text-slate-400 text-sm">
+                    <p>Milestone Overview Guide &copy; 2024</p>
+                    <p class="mt-2 sm:mt-0 flex items-center">Built with <i
+                            class="fa-solid fa-heart text-red-500 mx-1"></i> for relentless learners.</p>
                 </div>
 
             </div>
@@ -636,7 +745,7 @@
             let current = "";
             sections.forEach((section) => {
                 const sectionTop = section.offsetTop;
-                const sectionHeight = section.clientHeight;
+                // Add an offset so it triggers slightly before hitting the exact top
                 if (pageYOffset >= (sectionTop - 150)) {
                     current = section.getAttribute("id");
                 }

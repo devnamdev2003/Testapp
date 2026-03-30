@@ -1071,7 +1071,12 @@
                             <div class="absolute inset-0 bg-brand opacity-0 group-hover:opacity-5 transition-opacity"></div>
                             <div class="flex justify-between items-start mb-4 relative z-10">
                                 <h4 class="font-extrabold text-lg text-gray-800 dark:text-white group-hover:text-brand transition-colors pr-2 leading-tight">${cat.category}</h4>
-                                <span class="bg-brand/10 text-brand text-xs font-bold px-3 py-1.5 rounded-lg shrink-0">${totalLabs} ${wb.moduleLabel}s</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-brand/10 text-brand text-xs font-bold px-3 py-1.5 rounded-lg shrink-0">${totalLabs} ${wb.moduleLabel}s</span>
+                                    <button onclick="deleteCategory('${cat.category.replace(/'/g, "\\'")}', event)" class="text-gray-400 hover:text-red-500 bg-gray-50 dark:bg-gray-700/50 hover:bg-red-50 dark:hover:bg-red-900/30 transition p-1.5 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-red-200 dark:hover:border-red-800 shrink-0 shadow-sm" title="Delete Category">
+                                        <i class="fa-solid fa-trash text-sm"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="mt-auto pt-6 relative z-10">
                                 <div class="flex justify-between text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">
@@ -1554,6 +1559,35 @@
                     renderSidebar();
                     renderLabContent(activeLabId);
                 }
+            }
+        }
+
+        function deleteCategory(categoryName, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+
+            const wb = getActiveWorkbook();
+            if (!wb) return;
+
+            const categoryIndex = wb.categories.findIndex(c => c.category === categoryName);
+            if (categoryIndex === -1) return;
+
+            const category = wb.categories[categoryIndex];
+            const stepIds = category.labs.flatMap(lab => lab.steps.map(step => step.id));
+
+            if (confirm(`Are you sure you want to delete the category "${categoryName}"? This will permanently remove all ${category.labs.length} ${wb.moduleLabel}s and their steps inside it.`)) {
+                // Remove progress data for all steps in this category
+                stepIds.forEach(id => {
+                    delete appState.progressData[id];
+                });
+
+                // Remove the category
+                wb.categories.splice(categoryIndex, 1);
+
+                saveState();
+                renderSidebar();
+                renderLabContent(null);
             }
         }
 

@@ -405,42 +405,53 @@
     </div>
 
     <!-- 2. Create/Edit Workbook Modal -->
-    <div id="workbookModal" class="fixed inset-0 z-[70] flex items-center justify-center hidden p-4">
+    <div id="workbookModal" class="fixed inset-0 z-[70] flex items-center justify-center hidden p-3 sm:p-4">
         <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeWorkbookModal()"></div>
         <div
-            class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-xl z-10 overflow-hidden animate-fade-in flex flex-col max-h-[90vh] border border-gray-100 dark:border-gray-700">
+            class="w-full max-w-xl mx-auto bg-white dark:bg-gray-800 rounded-3xl shadow-2xl z-10 overflow-hidden flex flex-col max-h-[90vh] border border-gray-100 dark:border-gray-700">
             <div
-                class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 shrink-0">
-                <h3 id="workbookModalTitle" class="text-xl font-bold text-gray-800 dark:text-white flex items-center"><i
-                        class="fa-solid fa-book-open mr-3 text-brand"></i> Create Workbook</h3>
+                class="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 shrink-0">
+                <h3 id="workbookModalTitle"
+                    class="text-lg sm:text-xl font-bold text-gray-800 dark:text-white flex items-center">
+                    <i class="fa-solid fa-book-open mr-3 text-brand"></i>
+                    Create Workbook
+                </h3>
                 <button onclick="closeWorkbookModal()"
-                    class="text-gray-400 hover:text-gray-600 bg-white dark:bg-gray-800 shadow-sm rounded-full w-8 h-8 flex items-center justify-center"><i
-                        class="fa-solid fa-times"></i></button>
+                    class="text-gray-400 hover:text-gray-600 bg-white dark:bg-gray-800 shadow-sm rounded-full w-8 h-8 flex items-center justify-center">
+                    <i class="fa-solid fa-times"></i>
+                </button>
             </div>
-            <form id="workbookForm" class="p-6 space-y-5 overflow-y-auto">
+            <form id="workbookForm" class="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto">
                 <input type="hidden" id="wbFormId">
                 <div>
-                    <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Workbook Name</label>
+                    <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">
+                        Workbook Name
+                    </label>
                     <input type="text" id="wbFormTitle" placeholder="e.g., Spring Boot Masterclass" required
                         class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all font-medium">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Workbook Description
-                        <span class="text-gray-400 font-normal">(Optional)</span></label>
+                    <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">
+                        Workbook Description
+                        <span class="text-gray-400 font-normal">(Optional)</span>
+                    </label>
                     <textarea id="wbFormDescription" rows="2" placeholder="Briefly describe this workbook..."
                         class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all text-sm"></textarea>
                 </div>
 
-                <div class="grid grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Module
-                            Term</label>
+                        <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">
+                            Module Term
+                        </label>
                         <input type="text" id="wbFormModuleLabel" placeholder="e.g. Lab, Topic" value="Lab" required
                             class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Item Term</label>
+                        <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">
+                            Item Term
+                        </label>
                         <input type="text" id="wbFormStepLabel" placeholder="e.g. Checkpoint, Question"
                             value="Checkpoint" required
                             class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all">
@@ -448,43 +459,50 @@
                 </div>
 
                 <div
-                    class="flex space-x-6 bg-gray-50 dark:bg-gray-800/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50 mt-2">
+                    class="flex flex-col sm:flex-row gap-4 bg-gray-50 dark:bg-gray-800/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-700/50">
                     <div class="flex-1">
-                        <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Icon
-                            (FontAwesome)</label>
-                        <div class="flex items-center space-x-3">
+                        <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">
+                            Icon (FontAwesome)
+                        </label>
+                        <div class="flex items-center gap-3">
                             <input type="text" id="wbFormIcon" placeholder="fa-brands fa-java" value="fa-solid fa-book"
                                 required
-                                class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-white dark:bg-gray-900 transition-all"
+                                class="flex-1 min-w-0 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-white dark:bg-gray-900 transition-all"
                                 oninput="updateIconPreview('wbFormIcon', 'wbIconPreview')">
                             <div
                                 class="w-11 h-11 shrink-0 flex items-center justify-center bg-white dark:bg-gray-700 rounded-xl text-brand shadow-sm border border-gray-200 dark:border-gray-600">
                                 <i id="wbIconPreview" class="fa-solid fa-book text-xl"></i>
                             </div>
                         </div>
-                        <p class="text-[10px] text-gray-500 mt-1.5 font-medium">Find icons at <a
-                                href="https://fontawesome.com/icons" target="_blank" class="text-brand hover:underline"
-                                title="Search FontAwesome Icons">FontAwesome</a>.</p>
+                        <p class="text-[10px] text-gray-500 mt-1.5 font-medium">
+                            Find icons at
+                            <a href="https://fontawesome.com/icons" target="_blank" class="text-brand hover:underline">
+                                FontAwesome
+                            </a>
+                        </p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Theme
-                            Color</label>
+                    <div class="sm:w-auto">
+                        <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">
+                            Theme Color
+                        </label>
                         <input type="color" id="wbFormColor" value="#3b82f6"
-                            class="h-11 w-16 rounded-xl cursor-pointer border-0 p-0 bg-transparent shadow-sm">
+                            class="h-11 w-full sm:w-16 rounded-xl cursor-pointer border-0 p-0 bg-transparent shadow-sm">
                     </div>
                 </div>
             </form>
             <div
-                class="p-6 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3 bg-gray-50 dark:bg-gray-900/50 shrink-0">
+                class="p-4 sm:p-6 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-end gap-3 bg-gray-50 dark:bg-gray-900/50 shrink-0">
                 <button onclick="closeWorkbookModal()"
-                    class="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition">Cancel</button>
+                    class="w-full sm:w-auto px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                    Cancel
+                </button>
                 <button onclick="saveWorkbook()"
-                    class="px-8 py-2.5 rounded-xl bg-brand text-white font-bold hover:brightness-110 transition shadow-lg shadow-brand/30">Save
-                    Workbook</button>
+                    class="w-full sm:w-auto px-8 py-2.5 rounded-xl bg-brand text-white font-bold hover:brightness-110 transition shadow-lg shadow-brand/30">
+                    Save Workbook
+                </button>
             </div>
         </div>
     </div>
-
     <!-- 3. Add/Edit Lab Modal (Within a Workbook) -->
     <div id="manageLabModal" class="fixed inset-0 z-[70] flex items-center justify-center hidden p-4">
         <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeManageLabModal()"></div>

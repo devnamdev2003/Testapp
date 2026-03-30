@@ -1376,6 +1376,7 @@
                         const div = document.createElement('div');
                         div.className = "step-item flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm";
                         div.innerHTML = `
+                            <input type="hidden" name="stepInputId" value="${step.id}">
                             <div class="flex space-x-3">
                                 <input type="text" name="stepInputText" value="${step.text.replace(/"/g, '&quot;')}" class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
                                 <div class="flex space-x-1 shrink-0">
@@ -1393,6 +1394,7 @@
                 // Create Mode
                 document.getElementById('stepsContainer').innerHTML = `
                     <div class="step-item flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm">
+                        <input type="hidden" name="stepInputId" value="">
                         <div class="flex space-x-3">
                             <input type="text" name="stepInputText" placeholder="${wb.stepLabel} text..." class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
                             <div class="flex space-x-1 shrink-0">
@@ -1424,6 +1426,7 @@
             const div = document.createElement('div');
             div.className = "step-item flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm animate-fade-in";
             div.innerHTML = `
+                <input type="hidden" name="stepInputId" value="">
                 <div class="flex space-x-3">
                     <input type="text" name="stepInputText" placeholder="Next ${wb ? wb.stepLabel.toLowerCase() : 'item'}..." class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
                     <div class="flex space-x-1 shrink-0">
@@ -1452,6 +1455,7 @@
 
             const stepTextInputs = document.getElementsByName('stepInputText');
             const stepDescInputs = document.getElementsByName('stepInputDesc');
+            const stepIdInputs = document.getElementsByName('stepInputId');
 
             let isValid = true;
 
@@ -1479,8 +1483,9 @@
             for (let i = 0; i < stepTextInputs.length; i++) {
                 const textVal = stepTextInputs[i].value.trim();
                 const descVal = stepDescInputs[i] ? stepDescInputs[i].value.trim() : '';
+                const idVal = stepIdInputs[i] ? stepIdInputs[i].value.trim() : '';
                 if (textVal !== "") {
-                    steps.push({ text: textVal, description: descVal });
+                    steps.push({ id: idVal, text: textVal, description: descVal });
                 }
             }
 
@@ -1489,7 +1494,8 @@
             let targetLabId = labIdInput || 'lab-' + Date.now();
 
             const mappedSteps = steps.map((s, i) => {
-                const sid = `step-${targetLabId}-${i}`;
+                // If the step already has an ID, retain it; otherwise generate a new robust unique ID
+                const sid = s.id ? s.id : `step-${targetLabId}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
                 if (appState.progressData[sid] === undefined) {
                     appState.progressData[sid] = false;
                 }

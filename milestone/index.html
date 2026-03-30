@@ -500,13 +500,19 @@
             </div>
             <form id="labForm" class="p-6 space-y-5 overflow-y-auto">
                 <input type="hidden" id="labFormId">
-                <div>
+
+                <div id="categoryInputGroup" class="relative">
                     <label id="lblLabFormCategory"
                         class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Category /
                         Section</label>
-                    <input type="text" id="labFormCategory" placeholder="e.g., Core Concepts" required
+                    <input type="text" id="labFormCategory" placeholder="e.g., Core Concepts" autocomplete="off"
+                        oninput="handleCategoryInput(this.value)" onfocus="handleCategoryInput(this.value)"
                         class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all font-medium">
+                    <ul id="categorySuggestions"
+                        class="absolute z-20 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg hidden max-h-48 overflow-y-auto">
+                    </ul>
                 </div>
+
                 <div>
                     <label id="lblLabFormTitle"
                         class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Module Title</label>
@@ -624,6 +630,37 @@
                 <button onclick="executeLabImport()"
                     class="px-8 py-2.5 rounded-xl bg-brand text-white font-bold hover:brightness-110 shadow-lg shadow-brand/30 transition">Import
                     JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Edit Category Modal -->
+    <div id="editCategoryModal" class="fixed inset-0 z-[70] flex items-center justify-center hidden p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeEditCategoryModal()"></div>
+        <div
+            class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-md z-10 overflow-hidden animate-fade-in border border-gray-100 dark:border-gray-700">
+            <div
+                class="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 shrink-0">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-white flex items-center"><i
+                        class="fa-solid fa-pen-to-square mr-3 text-brand"></i> Edit Category</h3>
+                <button onclick="closeEditCategoryModal()"
+                    class="text-gray-400 hover:text-gray-600 bg-white dark:bg-gray-800 shadow-sm rounded-full w-8 h-8 flex items-center justify-center"><i
+                        class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-5">
+                <input type="hidden" id="editCatOldName">
+                <div>
+                    <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Category Name</label>
+                    <input type="text" id="editCatNewName" required
+                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand focus:border-brand outline-none bg-gray-50 dark:bg-gray-900/50 transition-all font-medium">
+                </div>
+            </div>
+            <div
+                class="p-6 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3 bg-gray-50 dark:bg-gray-900/50 shrink-0">
+                <button onclick="closeEditCategoryModal()"
+                    class="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition">Cancel</button>
+                <button onclick="saveCategoryName()"
+                    class="px-8 py-2.5 rounded-xl bg-brand text-white font-bold hover:brightness-110 transition shadow-lg shadow-brand/30">Save</button>
             </div>
         </div>
     </div>
@@ -1073,6 +1110,9 @@
                                 <h4 class="font-extrabold text-lg text-gray-800 dark:text-white group-hover:text-brand transition-colors pr-2 leading-tight">${cat.category}</h4>
                                 <div class="flex items-center space-x-2">
                                     <span class="bg-brand/10 text-brand text-xs font-bold px-3 py-1.5 rounded-lg shrink-0">${totalLabs} ${wb.moduleLabel}s</span>
+                                    <button onclick="openEditCategoryModal('${cat.category.replace(/'/g, "\\'")}', event)" class="text-gray-400 hover:text-blue-500 bg-gray-50 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition p-1.5 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-200 dark:hover:border-blue-800 shrink-0 shadow-sm" title="Edit Category">
+                                        <i class="fa-solid fa-pen text-sm"></i>
+                                    </button>
                                     <button onclick="deleteCategory('${cat.category.replace(/'/g, "\\'")}', event)" class="text-gray-400 hover:text-red-500 bg-gray-50 dark:bg-gray-700/50 hover:bg-red-50 dark:hover:bg-red-900/30 transition p-1.5 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-red-200 dark:hover:border-red-800 shrink-0 shadow-sm" title="Delete Category">
                                         <i class="fa-solid fa-trash text-sm"></i>
                                     </button>
@@ -1360,6 +1400,9 @@
             document.getElementById('btnLabFormAddStep').innerHTML = `<i class="fa-solid fa-plus mr-2"></i> Add Another ${wb.stepLabel}`;
             document.getElementById('btnLabFormSave').innerText = `Save ${wb.moduleLabel}`;
 
+            document.getElementById('categoryInputGroup').classList.remove('hidden');
+            document.getElementById('categorySuggestions').classList.add('hidden');
+
             if (typeof labId === 'string' && labId) {
                 // Edit Mode
                 let foundCat, foundLab;
@@ -1397,6 +1440,8 @@
                 }
             } else {
                 // Create Mode
+                document.getElementById('labFormCategory').value = '';
+
                 document.getElementById('stepsContainer').innerHTML = `
                     <div class="step-item flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm">
                         <input type="hidden" name="stepInputId" value="">
@@ -1422,8 +1467,45 @@
             [categoryInput, titleInput].forEach(input => {
                 input.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
             });
+            document.getElementById('categorySuggestions').classList.add('hidden');
             document.getElementById('manageLabModal').classList.add('hidden');
         }
+
+        function handleCategoryInput(val) {
+            const wb = getActiveWorkbook();
+            if (!wb) return;
+            const suggestionsEl = document.getElementById('categorySuggestions');
+            const query = val.trim().toLowerCase();
+
+            const matches = wb.categories
+                .map(c => c.category)
+                .filter(c => c.toLowerCase().includes(query));
+
+            if (matches.length > 0) {
+                suggestionsEl.innerHTML = matches.map(c =>
+                    `<li onclick="selectCategorySuggestion('${c.replace(/'/g, "\\'")}')" class="px-4 py-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm font-medium border-b border-gray-100 dark:border-gray-700 last:border-0 transition-colors">${c}</li>`
+                ).join('');
+                suggestionsEl.classList.remove('hidden');
+            } else {
+                suggestionsEl.classList.add('hidden');
+            }
+        }
+
+        function selectCategorySuggestion(cat) {
+            document.getElementById('labFormCategory').value = cat;
+            document.getElementById('categorySuggestions').classList.add('hidden');
+        }
+
+        // Hide category suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            const suggestionsEl = document.getElementById('categorySuggestions');
+            const inputEl = document.getElementById('labFormCategory');
+            if (suggestionsEl && inputEl && !suggestionsEl.classList.contains('hidden')) {
+                if (!inputEl.contains(e.target) && !suggestionsEl.contains(e.target)) {
+                    suggestionsEl.classList.add('hidden');
+                }
+            }
+        });
 
         function addStepInput() {
             const wb = getActiveWorkbook();
@@ -1450,6 +1532,7 @@
             if (!wb) return;
 
             const labIdInput = document.getElementById('labFormId').value;
+
             const categoryInput = document.getElementById('labFormCategory');
             const titleInput = document.getElementById('labFormTitle');
 
@@ -1469,7 +1552,7 @@
                 input.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
             });
 
-            // Validate Category
+            // Validate Category ALWAYS
             if (!categoryName) {
                 categoryInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
                 isValid = false;
@@ -1508,22 +1591,24 @@
             });
 
             if (labIdInput) {
-                // Remove old lab from its old category (in case category changed)
-                wb.categories.forEach((cat, cIdx) => {
+                // Safely remove old lab from its old category (in case category changed)
+                for (let cIdx = wb.categories.length - 1; cIdx >= 0; cIdx--) {
+                    const cat = wb.categories[cIdx];
                     const lIdx = cat.labs.findIndex(l => l.id === labIdInput);
                     if (lIdx > -1) {
                         cat.labs.splice(lIdx, 1);
                         if (cat.labs.length === 0) wb.categories.splice(cIdx, 1);
+                        break;
                     }
-                });
+                }
             }
 
+            // Push into existing or newly created category
             let category = wb.categories.find(c => c.category === categoryName);
             if (!category) {
                 category = { category: categoryName, labs: [] };
                 wb.categories.push(category);
             }
-
             category.labs.push({ id: targetLabId, title, icon, description: desc, steps: mappedSteps });
 
             saveState();
@@ -1588,6 +1673,51 @@
                 saveState();
                 renderSidebar();
                 renderLabContent(null);
+            }
+        }
+
+        // ==========================================
+        // CATEGORY EDIT MODAL
+        // ==========================================
+        function openEditCategoryModal(categoryName, event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            document.getElementById('editCatOldName').value = categoryName;
+            document.getElementById('editCatNewName').value = categoryName;
+            document.getElementById('editCatNewName').classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            document.getElementById('editCategoryModal').classList.remove('hidden');
+        }
+
+        function closeEditCategoryModal() {
+            document.getElementById('editCategoryModal').classList.add('hidden');
+        }
+
+        function saveCategoryName() {
+            const oldName = document.getElementById('editCatOldName').value;
+            const newNameInput = document.getElementById('editCatNewName');
+            const newName = newNameInput.value.trim();
+
+            if (!newName) {
+                newNameInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+                return;
+            }
+
+            const wb = getActiveWorkbook();
+            if (!wb) return;
+
+            if (oldName !== newName && wb.categories.some(c => c.category.toLowerCase() === newName.toLowerCase())) {
+                alert('A category with this name already exists.');
+                return;
+            }
+
+            const cat = wb.categories.find(c => c.category === oldName);
+            if (cat) {
+                cat.category = newName;
+                saveState();
+                closeEditCategoryModal();
+                renderSidebar();
+                renderLabContent(null); // Refreshes the category view
             }
         }
 

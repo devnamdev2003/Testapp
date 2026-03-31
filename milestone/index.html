@@ -317,12 +317,6 @@
                         <i class="fa-solid fa-file-import"></i>
                         <span>Import</span>
                     </button>
-                    <button onclick="exportCurrentWorkbook()" id="btnSidebarExport"
-                        class="w-full flex items-center justify-center space-x-2 border border-gray-700 hover:bg-gray-800 hover:border-gray-600 text-gray-300 py-2.5 px-2 rounded-xl text-xs transition font-semibold"
-                        title="Export this Workbook to JSON">
-                        <i class="fa-solid fa-file-export"></i>
-                        <span>Export</span>
-                    </button>
                     <button onclick="resetCurrentWorkbookProgress()"
                         class="w-full flex items-center justify-center space-x-2 border border-gray-700 hover:bg-gray-800 hover:border-gray-600 text-gray-300 py-2.5 px-2 rounded-xl text-xs transition font-semibold"
                         title="Reset Progress for this Workbook">
@@ -1266,6 +1260,49 @@
         // ==========================================
         // DASHBOARD RENDERER
         // ==========================================
+        function toggleWbDropdown(wbId) {
+            const dropdown = document.getElementById(`dropdown-${wbId}`);
+            const isHidden = dropdown.classList.contains('hidden');
+
+            // Close all other dropdowns first
+            closeAllDropdowns();
+
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+            }
+        }
+
+        function closeAllDropdowns() {
+            const dropdowns = document.querySelectorAll('[id^="dropdown-wb-"]');
+            dropdowns.forEach(d => d.classList.add('hidden'));
+        }
+
+        // Close dropdowns when clicking anywhere outside
+        document.addEventListener('click', () => {
+            closeAllDropdowns();
+        });
+
+        function exportSpecificWorkbook(wbId) {
+            const wb = appState.workbooks.find(w => w.id === wbId);
+            if (!wb) return;
+
+            // Export ONLY the categories array (the format expected by the Import function)
+            const dataStr = JSON.stringify(wb.categories, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            // Generate a clean filename based on the workbook title
+            const safeTitle = wb.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            a.download = `milestone_${safeTitle}_export.json`;
+
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
         function renderDashboard() {
             const grid = document.getElementById('workbookGrid');
             const headerRow = document.getElementById('dashboardHeaderRow');
@@ -1318,10 +1355,27 @@
                         <div class="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none transition-opacity group-hover:opacity-10" style="background: linear-gradient(to bottom right, ${escapeHTML(wb.color)}, transparent);"></div>
                         
                         ${!isSharedMode ? `
-                        <div class="absolute top-4 right-4 flex space-x-2 transition-opacity z-10">
-                            <button onclick="event.stopPropagation(); generateShareLink('${escapeHTML(wb.id)}')" class="text-gray-400 hover:text-green-500 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-full w-9 h-9 flex items-center justify-center shadow-sm hover:shadow transition-all" title="Share Workbook"><i class="fa-solid fa-share-nodes text-xs"></i></button>
-                            <button onclick="event.stopPropagation(); editWorkbook('${escapeHTML(wb.id)}')" class="text-gray-400 hover:text-blue-500 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-full w-9 h-9 flex items-center justify-center shadow-sm hover:shadow transition-all" title="Edit Topic"><i class="fa-solid fa-pen text-xs"></i></button>
-                            <button onclick="event.stopPropagation(); deleteWorkbook('${escapeHTML(wb.id)}')" class="text-gray-400 hover:text-red-500 bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-full w-9 h-9 flex items-center justify-center shadow-sm hover:shadow transition-all" title="Delete Topic"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <div class="absolute top-4 right-4 z-20">
+                            <button onclick="event.stopPropagation(); toggleWbDropdown('${escapeHTML(wb.id)}')" class="text-gray-400 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-700 backdrop-blur-sm border border-transparent hover:border-gray-200 dark:hover:border-gray-600 rounded-full w-8 h-8 flex items-center justify-center transition-all shadow-sm" title="Options">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <div id="dropdown-${escapeHTML(wb.id)}" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transform origin-top-right transition-all z-30">
+                                <div class="py-1">
+                                    <button onclick="event.stopPropagation(); closeAllDropdowns(); generateShareLink('${escapeHTML(wb.id)}')" class="w-full text-left px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center transition-colors">
+                                        <i class="fa-solid fa-share-nodes w-5 text-center mr-2 text-green-500"></i> Share Link
+                                    </button>
+                                    <button onclick="event.stopPropagation(); closeAllDropdowns(); exportSpecificWorkbook('${escapeHTML(wb.id)}')" class="w-full text-left px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center transition-colors">
+                                        <i class="fa-solid fa-file-export w-5 text-center mr-2" style="color: ${escapeHTML(wb.color)}"></i> Export JSON
+                                    </button>
+                                    <button onclick="event.stopPropagation(); closeAllDropdowns(); editWorkbook('${escapeHTML(wb.id)}')" class="w-full text-left px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center transition-colors">
+                                        <i class="fa-solid fa-pen w-5 text-center mr-2 text-blue-500"></i> Edit Workbook
+                                    </button>
+                                    <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                                    <button onclick="event.stopPropagation(); closeAllDropdowns(); deleteWorkbook('${escapeHTML(wb.id)}')" class="w-full text-left px-4 py-2.5 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center transition-colors">
+                                        <i class="fa-solid fa-trash w-5 text-center mr-2"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         ` : ''}
                         
@@ -2206,27 +2260,6 @@
             const url = new URL(window.location.href);
             url.searchParams.set('t', new Date().getTime());
             window.location.href = url.href;
-        }
-
-        function exportCurrentWorkbook() {
-            const wb = getActiveWorkbook();
-            if (!wb) return;
-
-            // We export ONLY the categories array, which is exactly what the Import function expects
-            const dataStr = JSON.stringify(wb.categories, null, 2);
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-
-            const a = document.createElement('a');
-            a.href = url;
-            // Generate a clean filename based on the workbook title
-            const safeTitle = wb.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            a.download = `milestone_${safeTitle}_export.json`;
-
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
         }
 
         function exportAllData() {

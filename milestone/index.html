@@ -1281,8 +1281,9 @@
                 headerRow.classList.remove('hidden');
                 grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6";
                 grid.innerHTML = '';
+                const sortedWorkbooks = [...appState.workbooks].sort((a, b) => a.title.localeCompare(b.title));
 
-                appState.workbooks.forEach(wb => {
+                sortedWorkbooks.forEach(wb => {
                     const modLabel = wb.moduleLabel || 'Lab';
                     const stepLabel = wb.stepLabel || 'Checkpoint';
 
@@ -1354,8 +1355,9 @@
 
             let totalWbSteps = 0;
             let completedWbSteps = 0;
+            const sortedCategories = [...wb.categories].sort((a, b) => a.category.localeCompare(b.category));
 
-            wb.categories.forEach(group => {
+            sortedCategories.forEach(group => {
                 const groupContainer = document.createElement('div');
 
                 const header = document.createElement('div');
@@ -1365,8 +1367,9 @@
 
                 const itemsContainer = document.createElement('div');
                 itemsContainer.className = "space-y-1.5";
+                const sortedLabs = [...group.labs].sort((a, b) => a.title.localeCompare(b.title));
 
-                group.labs.forEach(lab => {
+                sortedLabs.forEach(lab => {
                     const isActive = lab.id === activeLabId;
 
                     let labTotal = lab.steps.length;
@@ -1463,8 +1466,9 @@
                 } else {
                     // Category Listing State
                     let html = `<div class="animate-fade-in"><h3 class="text-2xl font-extrabold text-gray-800 dark:text-white mb-6 tracking-tight">Categories</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-5">`;
+                    const sortedCategoriesGrid = [...wb.categories].sort((a, b) => a.category.localeCompare(b.category));
 
-                    wb.categories.forEach(cat => {
+                    sortedCategoriesGrid.forEach(cat => {
                         const firstLabId = cat.labs.length > 0 ? cat.labs[0].id : null;
                         const totalLabs = cat.labs.length;
                         let catSteps = 0;

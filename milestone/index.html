@@ -1434,7 +1434,7 @@
                 const itemsContainer = document.createElement('div');
                 itemsContainer.className = "space-y-1.5";
 
-                group.labs.forEach(lab => {
+                group.labs.forEach((lab, labIdx) => {
                     const isActive = lab.id === activeLabId;
 
                     let labTotal = lab.steps.length;
@@ -1450,27 +1450,41 @@
                     const progPerc = labTotal === 0 ? 0 : Math.round((labComp / labTotal) * 100);
                     const isFullyComplete = progPerc === 100 && labTotal > 0;
 
-                    const btn = document.createElement('button');
-                    btn.className = `nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl transition-all text-left border border-transparent ${isActive ? 'bg-brand text-white shadow-md' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'}`;
-                    // Active state subtle border matching brand color
-                    if (isActive) btn.style.borderColor = 'rgba(255,255,255,0.2)';
+                    // Main Container for Lab Item
+                    const labWrapper = document.createElement('div');
+                    labWrapper.className = "flex items-center space-x-1 group/lab";
 
+                    const btn = document.createElement('button');
+                    btn.className = `nav-btn flex-1 min-w-0 flex items-center justify-between px-3.5 py-3 rounded-xl transition-all text-left border border-transparent ${isActive ? 'bg-brand text-white shadow-md' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'}`;
+                    if (isActive) btn.style.borderColor = 'rgba(255,255,255,0.2)';
                     btn.onclick = () => selectLab(lab.id, true);
-                    btn.title = lab.title;
 
                     btn.innerHTML = `
                         <div class="flex items-center space-x-3 truncate pr-2">
                             <i class="${escapeHTML(lab.icon)} ${isActive ? 'text-white' : 'text-gray-500'} w-5 text-center text-sm"></i>
-                            <span class="nav-text truncate font-bold text-[13px]" title="${escapeHTML(lab.title)}">${escapeHTML(lab.title)}</span>
+                            <span class="nav-text truncate font-bold text-[13px]">${escapeHTML(lab.title)}</span>
                         </div>
                         <div class="nav-text flex items-center shrink-0">
                             ${isFullyComplete
-                            ? '<i class="fa-solid fa-circle-check text-green-400 text-sm"></i>'
-                            : `<span class="text-[10px] font-extrabold ${isActive ? 'text-white/90' : 'text-gray-500'}">${progPerc}%</span>`
-                        }
+                                            ? '<i class="fa-solid fa-circle-check text-green-400 text-sm"></i>'
+                                            : `<span class="text-[10px] font-extrabold ${isActive ? 'text-white/90' : 'text-gray-500'}">${progPerc}%</span>`}
                         </div>
                     `;
-                    itemsContainer.appendChild(btn);
+
+                    // Reorder Controls (Visible on Hover in Sidebar)
+                    const controls = document.createElement('div');
+
+                    controls.className = "flex md:hidden md:group-hover/lab:flex flex-col space-y-1 nav-text shrink-0 ml-1";
+                    if (!isSharedMode) {
+                        controls.innerHTML = `
+                            <button onclick="moveLab('${escapeHTML(group.category)}', ${labIdx}, -1)" class="text-[10px] text-gray-500 p-1 bg-gray-800 rounded"><i class="fa-solid fa-chevron-up"></i></button>
+                            <button onclick="moveLab('${escapeHTML(group.category)}', ${labIdx}, 1)" class="text-[10px] text-gray-500 p-1 bg-gray-800 rounded"><i class="fa-solid fa-chevron-down"></i></button>
+                        `;
+                    }
+
+                    labWrapper.appendChild(btn);
+                    labWrapper.appendChild(controls);
+                    itemsContainer.appendChild(labWrapper);
                 });
 
                 groupContainer.appendChild(itemsContainer);
@@ -2095,29 +2109,43 @@
             });
 
             if (labIdInput) {
-                // Cleanup orphaned progress data if a step was completely removed during editing
-                let oldLab = null;
-                for (const cat of wb.categories) {
-                    oldLab = cat.labs.find(l => l.id === labIdInput);
-                    if (oldLab) break;
-                }
-                if (oldLab) {
-                    const newStepIds = mappedSteps.map(s => s.id);
-                    oldLab.steps.forEach(oldStep => {
-                        if (!newStepIds.includes(oldStep.id)) {
-                            delete appState.progressData[oldStep.id]; // Delete orphaned data from localstorage
-                        }
-                    });
+                let oldCatIndex = -1;
+                let oldLabIndex = -1;
+
+                // Find current position
+                for (let i = 0; i < wb.categories.length; i++) {
+                    const lIdx = wb.categories[i].labs.findIndex(l => l.id === labIdInput);
+                    if (lIdx > -1) {
+                        oldCatIndex = i;
+                        oldLabIndex = lIdx;
+                        break;
+                    }
                 }
 
-                // Safely remove old lab from its old category (in case category changed)
-                for (let cIdx = wb.categories.length - 1; cIdx >= 0; cIdx--) {
-                    const cat = wb.categories[cIdx];
-                    const lIdx = cat.labs.findIndex(l => l.id === labIdInput);
-                    if (lIdx > -1) {
-                        cat.labs.splice(lIdx, 1);
-                        if (cat.labs.length === 0) wb.categories.splice(cIdx, 1);
-                        break;
+                if (oldCatIndex > -1) {
+                    const oldCategory = wb.categories[oldCatIndex];
+
+                    // Cleanup progress data for removed steps
+                    const newStepIds = mappedSteps.map(s => s.id);
+                    oldCategory.labs[oldLabIndex].steps.forEach(oldStep => {
+                        if (!newStepIds.includes(oldStep.id)) {
+                            delete appState.progressData[oldStep.id];
+                        }
+                    });
+
+                    // REPLACEMENT LOGIC:
+                    if (oldCategory.category.toLowerCase() === categoryName.toLowerCase()) {
+                        // Same category: Overwrite at the same index to keep the order
+                        oldCategory.labs[oldLabIndex] = { id: targetLabId, title, icon, description: desc, steps: mappedSteps };
+                        saveState();
+                        touchActiveWorkbook();
+                        closeManageLabModal();
+                        selectLab(targetLabId, true);
+                        return; // Stop here so we don't execute the "push" logic below
+                    } else {
+                        // Different category: Remove it from the old one so it can be added to the new one below
+                        oldCategory.labs.splice(oldLabIndex, 1);
+                        if (oldCategory.labs.length === 0) wb.categories.splice(oldCatIndex, 1);
                     }
                 }
             }
@@ -2479,6 +2507,27 @@
                 const wb = appState.workbooks.find(w => w.id === activeWorkbookId);
                 if (wb) wb.updatedAt = Date.now();
             }
+        }
+        function moveLab(categoryName, currentIndex, direction) {
+            const wb = getActiveWorkbook();
+            if (!wb) return;
+
+            const category = wb.categories.find(c => c.category === categoryName);
+            if (!category) return;
+
+            const newIndex = currentIndex + direction;
+
+            // Check bounds
+            if (newIndex < 0 || newIndex >= category.labs.length) return;
+
+            // Swap Labs
+            const temp = category.labs[currentIndex];
+            category.labs[currentIndex] = category.labs[newIndex];
+            category.labs[newIndex] = temp;
+
+            saveState();
+            renderSidebar();
+            renderLabContent(activeLabId, true); // Refresh content to show updated sorting
         }
         // ==========================================
         // BOOTSTRAP

@@ -349,16 +349,25 @@
             color: var(--text-primary);
         }
 
+
         .collection-items {
-            display: none;
-            padding-left: 8px;
-            margin-top: 4px;
-            border-left: 1px dashed var(--border-color);
-            margin-left: 16px;
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s ease-in-out;
         }
 
         .collection-group.open .collection-items {
-            display: block;
+            grid-template-rows: 1fr;
+        }
+
+        .collection-items-inner {
+            overflow: hidden;
+            padding-left: 8px;
+            margin-left: 16px;
+            border-left: 1px dashed var(--border-color);
+            margin-top: 4px;
+            display: flex;
+            flex-direction: column;
         }
 
         .folder-icon {
@@ -1111,6 +1120,7 @@
                 width: 40px;
                 height: 3px;
             }
+
         }
     </style>
 </head>
@@ -1143,9 +1153,16 @@
                 <input type="file" id="importFile" style="display: none" accept=".json" onchange="importData(event)">
             </div>
         </div>
-        <div class="sidebar-search">
+        <div class="sidebar-search" style="display: flex; gap: 8px; align-items: center;">
             <input type="text" id="searchInput" class="input-base" placeholder="Search requests..."
-                onkeyup="filterHistory()">
+                onkeyup="filterHistory()" style="flex: 1;">
+            <button class="btn btn-icon" id="toggleCollectionsBtn" onclick="toggleAllCollections()" title="Collapse All"
+                style="padding: 6px;">
+                <svg id="toggleCollectionsIcon" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+            </button>
         </div>
         <div class="history-list" id="historyList">
             <!-- Dynamic History Items -->
@@ -2921,7 +2938,8 @@
             sortedColNames.forEach(colName => {
                 const items = collections[colName];
                 const groupDiv = document.createElement('div');
-                groupDiv.className = 'collection-group open';
+                // Respect the current toggle state when re-rendering
+                groupDiv.className = isAllCollapsed ? 'collection-group' : 'collection-group open';
 
                 const header = document.createElement('div');
                 header.className = 'collection-header';
@@ -2934,6 +2952,10 @@
 
                 const itemsDiv = document.createElement('div');
                 itemsDiv.className = 'collection-items';
+
+                // Add the inner wrapper for the CSS animation
+                const innerDiv = document.createElement('div');
+                innerDiv.className = 'collection-items-inner';
 
                 items.forEach(item => {
                     const methodColor = `var(--method-${(item.method || 'GET').toLowerCase()}, var(--text-primary))`;
@@ -2952,9 +2974,10 @@
                             <span class="url-text" title="${item.url}">${item.url}</span>
                         </div>
                     `;
-                    itemsDiv.appendChild(div);
+                    innerDiv.appendChild(div);
                 });
 
+                itemsDiv.appendChild(innerDiv);
                 groupDiv.appendChild(header);
                 groupDiv.appendChild(itemsDiv);
                 historyList.appendChild(groupDiv);
@@ -3023,7 +3046,31 @@
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
         }
+        let isAllCollapsed = false;
 
+        function toggleAllCollections() {
+            const collections = document.querySelectorAll('.collection-group');
+            const btnIcon = document.getElementById('toggleCollectionsIcon');
+
+            isAllCollapsed = !isAllCollapsed;
+
+            collections.forEach(group => {
+                if (isAllCollapsed) {
+                    group.classList.remove('open');
+                } else {
+                    group.classList.add('open');
+                }
+            });
+
+            // Update Icon to show current state
+            if (isAllCollapsed) {
+                btnIcon.innerHTML = '<polyline points="6 9 12 15 18 9"></polyline>'; // Down arrow
+                document.getElementById('toggleCollectionsBtn').title = "Expand All";
+            } else {
+                btnIcon.innerHTML = '<polyline points="18 15 12 9 6 15"></polyline>'; // Up arrow
+                document.getElementById('toggleCollectionsBtn').title = "Collapse All";
+            }
+        }
     </script>
 </body>
 

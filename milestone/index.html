@@ -816,6 +816,51 @@
             </div>
         </div>
     </div>
+
+    <div id="markdownEditorModal" class="fixed inset-0 z-[80] flex items-center justify-center hidden p-4">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" onclick="closeMarkdownEditor()"></div>
+        <div
+            class="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-2xl z-10 overflow-hidden animate-fade-in flex flex-col h-[80vh] border border-gray-100 dark:border-gray-700">
+
+            <div
+                class="p-4 sm:p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 shrink-0">
+                <h3 class="text-lg sm:text-xl font-bold text-gray-800 dark:text-white flex items-center">
+                    <i class="fa-brands fa-markdown mr-3 text-brand"></i> Edit Description
+                </h3>
+                <button type="button" onclick="closeMarkdownEditor()"
+                    class="text-gray-400 hover:text-gray-600 bg-white dark:bg-gray-800 shadow-sm rounded-full w-8 h-8 flex items-center justify-center">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <div
+                class="flex border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shrink-0 px-6 pt-2">
+                <button type="button" id="tabWrite" onclick="switchMarkdownTab('write')"
+                    class="px-4 py-2.5 border-b-2 border-brand text-brand font-bold text-sm outline-none transition-colors">Write</button>
+                <button type="button" id="tabPreview" onclick="switchMarkdownTab('preview')"
+                    class="px-4 py-2.5 border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 font-bold text-sm outline-none transition-colors">Preview</button>
+            </div>
+
+            <div class="flex-1 overflow-hidden flex flex-col bg-gray-50 dark:bg-gray-900/50">
+                <textarea id="mdEditorTextarea"
+                    class="w-full h-full p-6 resize-none outline-none bg-transparent text-gray-800 dark:text-gray-200 font-mono text-sm leading-relaxed"
+                    placeholder="Write your markdown description here... Use **bold**, *italics*, and `code` blocks."></textarea>
+
+                <div id="mdEditorPreview"
+                    class="w-full h-full p-6 overflow-y-auto hidden prose prose-slate dark:prose-invert max-w-none bg-white dark:bg-gray-900">
+                </div>
+            </div>
+
+            <div
+                class="p-4 sm:p-6 border-t border-gray-100 dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-900/50 shrink-0">
+                <button type="button" onclick="closeMarkdownEditor()"
+                    class="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-400 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition">Cancel</button>
+                <button type="button" onclick="saveMarkdownEditor()"
+                    class="px-8 py-2.5 rounded-xl bg-brand text-white font-bold hover:brightness-110 transition shadow-lg shadow-brand/30">Save
+                    Content</button>
+            </div>
+        </div>
+    </div>
     <script>
         // ==========================================
         // SAFE HISTORY API WRAPPERS
@@ -1991,15 +2036,24 @@
                         div.className = "step-item flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm";
                         div.innerHTML = `
                             <input type="hidden" name="stepInputId" value="${escapeHTML(step.id)}">
-                            <div class="flex space-x-3">
-                                <input type="text" name="stepInputText" value="${escapeHTML(step.text)}" class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
+                            
+                            <input type="text" name="stepInputText" value="${escapeHTML(step.text)}" class="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
+                            
+                            <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 border-t border-gray-100 dark:border-gray-800 pt-3">
+                                <div class="step-desc-container flex-1">
+                                    <input type="hidden" name="stepInputDesc" value="${escapeHTML(step.description)}">
+                                    <button type="button" onclick="openMarkdownEditor(this)" class="flex items-center space-x-2 text-sm font-bold px-4 py-2 rounded-lg transition border ${step.description.trim() ? 'bg-brand/10 text-brand border-brand/30 hover:bg-brand/20' : 'bg-gray-50 dark:bg-gray-800 text-gray-500 border-gray-200 dark:border-gray-700 hover:text-brand'}">
+                                        <i class="fa-solid ${step.description.trim() ? 'fa-pen-to-square' : 'fa-plus'}"></i>
+                                        <span class="desc-btn-text">${step.description.trim() ? 'Edit Description' : 'Add Description'}</span>
+                                    </button>
+                                </div>
+                                
                                 <div class="flex space-x-1 shrink-0">
                                     <button type="button" onclick="moveStepUp(this)" class="text-gray-500 bg-gray-100 dark:bg-gray-800 hover:text-brand px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700" title="Move Up"><i class="fa-solid fa-arrow-up"></i></button>
                                     <button type="button" onclick="moveStepDown(this)" class="text-gray-500 bg-gray-100 dark:bg-gray-800 hover:text-brand px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700" title="Move Down"><i class="fa-solid fa-arrow-down"></i></button>
                                     <button type="button" onclick="this.closest('.step-item').remove()" class="text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 py-2 rounded-lg transition border border-red-100 dark:border-red-900/30" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </div>
-                            <textarea name="stepInputDesc" rows="2" placeholder="Optional details, markdown supported..." class="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 text-sm">${escapeHTML(step.description)}</textarea>
                         `;
                         stepsContainer.appendChild(div);
                     });
@@ -2009,17 +2063,25 @@
                 document.getElementById('labFormCategory').value = '';
 
                 document.getElementById('stepsContainer').innerHTML = `
-                    <div class="step-item flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm">
+                    <div class="step-item flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm animate-fade-in">
                         <input type="hidden" name="stepInputId" value="">
-                        <div class="flex space-x-3">
-                            <input type="text" name="stepInputText" placeholder="${escapeHTML(wb.stepLabel)} text..." class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
+                        
+                        <input type="text" name="stepInputText" placeholder="${escapeHTML(wb.stepLabel)} text..." class="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
+                        
+                        <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 border-t border-gray-100 dark:border-gray-800 pt-3">
+                            <div class="step-desc-container flex-1">
+                                <input type="hidden" name="stepInputDesc" value="">
+                                <button type="button" onclick="openMarkdownEditor(this)" class="flex items-center space-x-2 text-sm font-bold px-4 py-2 rounded-lg transition border bg-gray-50 dark:bg-gray-800 text-gray-500 border-gray-200 dark:border-gray-700 hover:text-brand">
+                                    <i class="fa-solid fa-plus"></i>
+                                    <span class="desc-btn-text">Add Description</span>
+                                </button>
+                            </div>
                             <div class="flex space-x-1 shrink-0">
                                 <button type="button" onclick="moveStepUp(this)" class="text-gray-500 bg-gray-100 dark:bg-gray-800 hover:text-brand px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700" title="Move Up"><i class="fa-solid fa-arrow-up"></i></button>
                                 <button type="button" onclick="moveStepDown(this)" class="text-gray-500 bg-gray-100 dark:bg-gray-800 hover:text-brand px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700" title="Move Down"><i class="fa-solid fa-arrow-down"></i></button>
                                 <button type="button" onclick="this.closest('.step-item').remove()" class="text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 py-2 rounded-lg transition border border-red-100 dark:border-red-900/30" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </div>
-                        <textarea name="stepInputDesc" rows="2" placeholder="Optional details, markdown supported..." class="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 text-sm"></textarea>
                     </div>`;
             }
 
@@ -2080,15 +2142,23 @@
             div.className = "step-item flex flex-col space-y-3 border border-gray-200 dark:border-gray-700 p-4 rounded-xl relative bg-white dark:bg-gray-900 shadow-sm animate-fade-in";
             div.innerHTML = `
                 <input type="hidden" name="stepInputId" value="">
-                <div class="flex space-x-3">
-                    <input type="text" name="stepInputText" placeholder="Next ${escapeHTML(wb ? wb.stepLabel.toLowerCase() : 'item')}..." class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
+                
+                <input type="text" name="stepInputText" placeholder="Next ${escapeHTML(wb ? wb.stepLabel.toLowerCase() : 'item')}..." class="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 font-medium">
+                
+                <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 border-t border-gray-100 dark:border-gray-800 pt-3">
+                    <div class="step-desc-container flex-1">
+                        <input type="hidden" name="stepInputDesc" value="">
+                        <button type="button" onclick="openMarkdownEditor(this)" class="flex items-center space-x-2 text-sm font-bold px-4 py-2 rounded-lg transition border bg-gray-50 dark:bg-gray-800 text-gray-500 border-gray-200 dark:border-gray-700 hover:text-brand">
+                            <i class="fa-solid fa-plus"></i>
+                            <span class="desc-btn-text">Add Description</span>
+                        </button>
+                    </div>
                     <div class="flex space-x-1 shrink-0">
                         <button type="button" onclick="moveStepUp(this)" class="text-gray-500 bg-gray-100 dark:bg-gray-800 hover:text-brand px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700" title="Move Up"><i class="fa-solid fa-arrow-up"></i></button>
                         <button type="button" onclick="moveStepDown(this)" class="text-gray-500 bg-gray-100 dark:bg-gray-800 hover:text-brand px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700" title="Move Down"><i class="fa-solid fa-arrow-down"></i></button>
                         <button type="button" onclick="this.closest('.step-item').remove()" class="text-red-500 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/30 px-3 py-2 rounded-lg transition border border-red-100 dark:border-red-900/30" title="Remove Item"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
-                <textarea name="stepInputDesc" rows="2" placeholder="Optional details, markdown supported..." class="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-brand outline-none bg-gray-50 dark:bg-gray-800 text-sm"></textarea>
             `;
             container.appendChild(div);
         }
@@ -2706,6 +2776,79 @@
                 console.error('Failed to copy text: ', err);
                 alert('Failed to copy to clipboard. Your browser might not support this feature.');
             });
+        }
+
+        // ==========================================
+        // MARKDOWN EDITOR MODAL LOGIC
+        // ==========================================
+        let currentMdTargetInput = null;
+        let currentMdTargetBtn = null;
+
+        function openMarkdownEditor(btn) {
+            const container = btn.closest('.step-desc-container');
+            currentMdTargetInput = container.querySelector('input[name="stepInputDesc"]');
+            currentMdTargetBtn = container.querySelector('.desc-btn-text');
+
+            // Populate textarea with existing value
+            document.getElementById('mdEditorTextarea').value = currentMdTargetInput.value;
+
+            // Default to Write tab
+            switchMarkdownTab('write');
+            document.getElementById('markdownEditorModal').classList.remove('hidden');
+        }
+
+        function closeMarkdownEditor() {
+            document.getElementById('markdownEditorModal').classList.add('hidden');
+            currentMdTargetInput = null;
+            currentMdTargetBtn = null;
+        }
+
+        function saveMarkdownEditor() {
+            if (currentMdTargetInput && currentMdTargetBtn) {
+                const val = document.getElementById('mdEditorTextarea').value;
+                currentMdTargetInput.value = val; // Store back in hidden input
+
+                // Update button UI based on if content exists
+                const btnParent = currentMdTargetBtn.closest('button');
+                const icon = btnParent.querySelector('i');
+
+                if (val.trim() !== '') {
+                    currentMdTargetBtn.innerText = 'Edit Description';
+                    icon.className = 'fa-solid fa-pen-to-square';
+                    btnParent.className = 'flex items-center space-x-2 text-sm font-bold px-4 py-2.5 rounded-lg transition border bg-brand/10 text-brand border-brand/30 hover:bg-brand/20';
+                } else {
+                    currentMdTargetBtn.innerText = 'Add Description';
+                    icon.className = 'fa-solid fa-plus';
+                    btnParent.className = 'flex items-center space-x-2 text-sm font-bold px-4 py-2.5 rounded-lg transition border bg-gray-50 dark:bg-gray-800 text-gray-500 border-gray-200 dark:border-gray-700 hover:text-brand';
+                }
+            }
+            closeMarkdownEditor();
+        }
+
+        function switchMarkdownTab(tab) {
+            const btnWrite = document.getElementById('tabWrite');
+            const btnPreview = document.getElementById('tabPreview');
+            const areaWrite = document.getElementById('mdEditorTextarea');
+            const areaPreview = document.getElementById('mdEditorPreview');
+
+            const activeTabClass = 'px-4 py-2.5 border-b-2 border-brand text-brand font-bold text-sm outline-none transition-colors';
+            const inactiveTabClass = 'px-4 py-2.5 border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 font-bold text-sm outline-none transition-colors';
+
+            if (tab === 'write') {
+                btnWrite.className = activeTabClass;
+                btnPreview.className = inactiveTabClass;
+                areaWrite.classList.remove('hidden');
+                areaPreview.classList.add('hidden');
+            } else {
+                btnPreview.className = activeTabClass;
+                btnWrite.className = inactiveTabClass;
+                areaWrite.classList.add('hidden');
+                areaPreview.classList.remove('hidden');
+
+                // Parse markdown to HTML
+                const rawMd = areaWrite.value;
+                areaPreview.innerHTML = (typeof marked !== 'undefined') ? marked.parse(rawMd) : escapeHTML(rawMd);
+            }
         }
 
         // ==========================================

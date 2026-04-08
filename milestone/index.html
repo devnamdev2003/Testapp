@@ -187,6 +187,14 @@
                 transform: rotate(360deg);
             }
         }
+
+        .collapsed-sidebar .nav-text,
+        .collapsed-sidebar .nav-header,
+        .collapsed-sidebar .progress-container,
+        .collapsed-sidebar .sidebar-footer,
+        .collapsed-sidebar #sidebarSearchContainer {
+            display: none;
+        }
     </style>
 </head>
 
@@ -298,6 +306,15 @@
                 </button>
             </div>
 
+            <div class="px-4 pt-5 pb-1 shrink-0 transition-all" id="sidebarSearchContainer">
+                <div class="relative group/search">
+                    <input type="text" id="workbookSearchInput" oninput="filterWorkbookModules(this.value)"
+                        placeholder="Search modules & tasks..."
+                        class="w-full bg-gray-900/50 border border-gray-700 text-gray-200 text-sm rounded-xl pl-10 pr-3 py-2.5 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all placeholder-gray-500 shadow-inner">
+                    <i
+                        class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-gray-500 text-sm group-focus-within:text-brand transition-colors"></i>
+                </div>
+            </div>
             <!-- Navigation Items Container -->
             <nav id="moduleList" class="flex-1 overflow-y-auto px-4 py-6 space-y-6">
                 <!-- Modules injected here -->
@@ -1341,6 +1358,10 @@
 
             activeWorkbookId = wb.id;
             activeLabId = targetLabId;
+
+            // Add this to clear search input when opening a new workbook
+            const searchInput = document.getElementById('workbookSearchInput');
+            if (searchInput) searchInput.value = '';
 
             if (pushHistory) {
                 let url;
@@ -2979,7 +3000,114 @@
             alert("Workbook saved to your dashboard! Exiting shared view...");
             exitSharedMode();
         }
+        function filterWorkbookModules(val) {
+            renderSidebar(val);
+        }
 
+        function renderSidebar(searchTerm = '') {
+            const wb = getActiveWorkbook();
+            if (!wb) return;
+
+            const listEl = document.getElementById('moduleList');
+            listEl.innerHTML = '';
+
+            const query = searchTerm.toLowerCase().trim();
+
+            let totalWbSteps = 0;
+            let completedWbSteps = 0;
+            let matchCount = 0;
+
+            wb.categories.forEach(group => {
+                let hasVisibleLabs = false;
+                const groupContainer = document.createElement('div');
+
+                const header = document.createElement('div');
+                header.className = "nav-header text-[10px] font-bold text-gray-400/80 uppercase tracking-widest mb-3 px-1 flex items-center";
+                header.innerHTML = `<span>${escapeHTML(group.category)}</span><div class="ml-3 h-px flex-1 bg-gray-700/50"></div>`;
+                groupContainer.appendChild(header);
+
+                const itemsContainer = document.createElement('div');
+                itemsContainer.className = "space-y-1.5";
+
+                group.labs.forEach((lab, labIdx) => {
+                    const isActive = lab.id === activeLabId;
+
+                    // Always calculate global progress regardless of search filter
+                    let labTotal = lab.steps.length;
+                    let labComp = 0;
+                    lab.steps.forEach(s => {
+                        totalWbSteps++;
+                        if (appState.progressData[s.id]) {
+                            labComp++;
+                            completedWbSteps++;
+                        }
+                    });
+
+                    // Search Filter Logic
+                    const matchTitle = lab.title.toLowerCase().includes(query);
+                    const matchSteps = lab.steps.some(s => s.text.toLowerCase().includes(query) || (s.description && s.description.toLowerCase().includes(query)));
+                    const isMatch = query === '' || matchTitle || matchSteps;
+
+                    if (isMatch) {
+                        hasVisibleLabs = true;
+                        matchCount++;
+
+                        const progPerc = labTotal === 0 ? 0 : Math.round((labComp / labTotal) * 100);
+                        const isFullyComplete = progPerc === 100 && labTotal > 0;
+
+                        // Main Container for Lab Item
+                        const labWrapper = document.createElement('div');
+                        labWrapper.className = "flex items-center space-x-1 group/lab";
+
+                        const btn = document.createElement('button');
+                        btn.className = `nav-btn flex-1 min-w-0 flex items-center justify-between px-3.5 py-3 rounded-xl transition-all text-left border border-transparent ${isActive ? 'bg-brand text-white shadow-md' : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'}`;
+                        if (isActive) btn.style.borderColor = 'rgba(255,255,255,0.2)';
+                        btn.onclick = () => selectLab(lab.id, true);
+
+                        btn.innerHTML = `
+                    <div class="flex items-center space-x-3 truncate pr-2">
+                        <i class="${escapeHTML(lab.icon)} ${isActive ? 'text-white' : 'text-gray-500'} w-5 text-center text-sm"></i>
+                        <span class="nav-text truncate font-bold text-[13px]">${escapeHTML(lab.title)}</span>
+                    </div>
+                    <div class="nav-text flex items-center shrink-0">
+                        ${isFullyComplete
+                                ? '<i class="fa-solid fa-circle-check text-green-400 text-sm"></i>'
+                                : `<span class="text-[10px] font-extrabold ${isActive ? 'text-white/90' : 'text-gray-500'}">${progPerc}%</span>`}
+                    </div>
+                `;
+
+                        // Reorder Controls (Visible on Hover in Sidebar)
+                        const controls = document.createElement('div');
+                        controls.className = "flex md:hidden md:group-hover/lab:flex flex-col space-y-1 nav-text shrink-0 ml-1";
+                        if (!isSharedMode) {
+                            controls.innerHTML = `
+                        <button onclick="moveLab('${escapeHTML(group.category)}', ${labIdx}, -1)" class="text-[10px] text-gray-500 p-1 bg-gray-800 rounded"><i class="fa-solid fa-chevron-up"></i></button>
+                        <button onclick="moveLab('${escapeHTML(group.category)}', ${labIdx}, 1)" class="text-[10px] text-gray-500 p-1 bg-gray-800 rounded"><i class="fa-solid fa-chevron-down"></i></button>
+                    `;
+                        }
+
+                        labWrapper.appendChild(btn);
+                        labWrapper.appendChild(controls);
+                        itemsContainer.appendChild(labWrapper);
+                    }
+                });
+
+                if (hasVisibleLabs) {
+                    groupContainer.appendChild(itemsContainer);
+                    listEl.appendChild(groupContainer);
+                }
+            });
+
+            // Show empty state if search yields no results
+            if (query !== '' && matchCount === 0) {
+                listEl.innerHTML = `<div class="text-center text-gray-500 text-xs py-8 nav-text">No matches found for "${escapeHTML(query)}"</div>`;
+            }
+
+            // Update global progress bar
+            const totalPerc = totalWbSteps === 0 ? 0 : Math.round((completedWbSteps / totalWbSteps) * 100);
+            document.getElementById('overallProgressBar').style.width = totalPerc + '%';
+            document.getElementById('overallProgressText').innerText = totalPerc + '%';
+        }
         // ==========================================
         // BOOTSTRAP
         // ==========================================

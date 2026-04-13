@@ -169,8 +169,29 @@
             </div>
 
             <div>
-
-                <p id="date-display" class="text-sm text-gray-500 dark:text-gray-400 font-medium mt-0.5"></p>
+                <h1
+                    class="text-2xl font-bold text-gray-800 dark:text-white tracking-tight leading-tight hidden sm:block">
+                    My Streaks</h1>
+                <!-- Main Date Navigation -->
+                <div class="flex items-center gap-1 mt-0.5 sm:mt-1">
+                    <button onclick="changeMainDate(-1)"
+                        class="p-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 active:bg-gray-200 dark:active:bg-gray-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <p id="date-display"
+                        class="text-sm text-gray-600 dark:text-gray-300 font-bold px-2 min-w-[80px] text-center select-none">
+                    </p>
+                    <button onclick="changeMainDate(1)" id="main-next-day-btn"
+                        class="p-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 active:bg-gray-200 dark:active:bg-gray-600 transition-colors opacity-30 pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
         <div class="flex items-center gap-2">
@@ -205,7 +226,8 @@
             class="hidden slide-up bg-white dark:bg-gray-800 rounded-2xl p-5 mb-5 shadow-sm border border-gray-100 dark:border-gray-700">
             <div class="flex justify-between items-end mb-2">
                 <div>
-                    <h2 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Today's
+                    <h2 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                        id="progress-header-text">Today's
                         Progress</h2>
                     <p class="text-2xl font-black text-gray-800 dark:text-white mt-1" id="progress-text">0 / 0</p>
                 </div>
@@ -228,7 +250,7 @@
                     <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                 </svg>
             </div>
-            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">No active streaks</h2>
+            <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2" id="empty-title">No active streaks</h2>
             <p class="text-gray-500 dark:text-gray-400 mb-6">Build good habits by tracking your progress. Tap the +
                 button to start.</p>
         </div>
@@ -331,9 +353,26 @@
         <div
             class="bg-white dark:bg-gray-800 w-full sm:w-96 max-h-[80vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl p-6 transform translate-y-full sm:translate-y-0 scale-95 transition-all duration-300 shadow-2xl">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-gray-800 dark:text-white" id="day-detail-title">Date</h3>
+                <div class="flex items-center gap-3">
+                    <button onclick="changeDayDetail(-1)"
+                        class="p-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 active:bg-gray-200 dark:active:bg-gray-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <h3 class="text-lg sm:text-xl font-bold text-gray-800 dark:text-white text-center min-w-[120px]"
+                        id="day-detail-title">Date</h3>
+                    <button onclick="changeDayDetail(1)"
+                        class="p-1.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 active:bg-gray-200 dark:active:bg-gray-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
                 <button onclick="closeDayDetails()"
-                    class="text-gray-400 active:text-gray-600 dark:active:text-gray-200 p-1 bg-gray-100 dark:bg-gray-700 rounded-full">
+                    class="text-gray-400 active:text-gray-600 dark:active:text-gray-200 p-1.5 bg-gray-100 dark:bg-gray-700 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -630,7 +669,7 @@
                     </div>
                 </button>
 
-                <button onclick="toggleArchiveView()" id="btn-toggle-archive"
+                <button onclick="openArchiveFromSettings()" id="btn-toggle-archive"
                     class="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 active:scale-95 transition-all">
                     <div class="flex items-center gap-3">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -700,13 +739,65 @@
     </div>
 
     <script>
+        // --- History & Routing Management ---
+        let openModalsCount = 0;
+        let isPopStateNavigation = false;
+
+        function pushAppHistory() {
+            history.pushState({ appModal: true }, '');
+            openModalsCount++;
+        }
+
+        function popAppHistory() {
+            if (openModalsCount > 0) {
+                openModalsCount--;
+                if (!isPopStateNavigation) {
+                    history.back();
+                }
+            }
+        }
+
+        window.addEventListener('popstate', (e) => {
+            isPopStateNavigation = true;
+
+            if (openModalsCount > 0) {
+                const dayDetail = document.getElementById('day-detail-modal');
+                const category = document.getElementById('category-modal');
+                const insights = document.getElementById('insights-modal');
+                const form = document.getElementById('form-modal');
+                const globalCal = document.getElementById('global-calendar-modal');
+                const settings = document.getElementById('settings-modal');
+
+                // Close whichever is currently visible
+                if (dayDetail && !dayDetail.classList.contains('hidden')) {
+                    closeDayDetails();
+                } else if (category && !category.classList.contains('hidden')) {
+                    closeCategoryManager();
+                } else if (insights && !insights.classList.contains('hidden')) {
+                    closeInsights();
+                } else if (form && !form.classList.contains('hidden')) {
+                    closeFormModal();
+                } else if (globalCal && !globalCal.classList.contains('hidden')) {
+                    closeGlobalCalendar();
+                } else if (settings && !settings.classList.contains('hidden')) {
+                    closeSettings();
+                } else if (isViewingArchived) {
+                    toggleArchiveView();
+                }
+            }
+
+            setTimeout(() => { isPopStateNavigation = false; }, 50);
+        });
+
         // --- State Management ---
         let streaks = [];
         let calendarStates = {};
         let isViewingArchived = false;
         let globalCalendarOffset = 0;
+        let mainDisplayDateOffset = 0;
         let sortableInstance = null;
         let currentInsightId = null;
+        let currentDetailDateStr = null;
 
         const STORAGE_KEY = 'streak_tracker_pro_data';
         const CAT_STORAGE_KEY = 'streak_tracker_categories';
@@ -744,7 +835,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadCategories();
             loadData();
-            document.getElementById('date-display').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            updateMainDateDisplay();
             setupColorPicker();
         });
 
@@ -793,6 +884,43 @@
         }
         const getToday = () => getLocalDateString(new Date());
 
+        function getMainDisplayDate() {
+            const d = new Date();
+            d.setDate(d.getDate() + mainDisplayDateOffset);
+            return d;
+        }
+
+        function getMainDisplayDateStr() {
+            return getLocalDateString(getMainDisplayDate());
+        }
+
+        function changeMainDate(delta) {
+            if (mainDisplayDateOffset + delta > 0) return; // Prevent viewing future dates
+            mainDisplayDateOffset += delta;
+            updateMainDateDisplay();
+            render();
+        }
+
+        function updateMainDateDisplay() {
+            const displayDate = getMainDisplayDate();
+            let dateText = '';
+
+            if (mainDisplayDateOffset === 0) {
+                dateText = 'Today';
+                document.getElementById('main-next-day-btn').classList.add('opacity-30', 'pointer-events-none');
+            } else {
+                document.getElementById('main-next-day-btn').classList.remove('opacity-30', 'pointer-events-none');
+                if (mainDisplayDateOffset === -1) {
+                    dateText = 'Yesterday';
+                } else {
+                    dateText = displayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                }
+            }
+
+            document.getElementById('date-display').textContent = dateText;
+            document.getElementById('progress-header-text').textContent = mainDisplayDateOffset === 0 ? "Today's Progress" : `${dateText}'s Progress`;
+        }
+
         // --- Categories Manager ---
         function populateCategoryDropdowns() {
             const select = document.getElementById('habit-category');
@@ -807,17 +935,21 @@
 
         function openCategoryManager() {
             closeSettings();
-            renderCategoryManagerList();
-            const modal = document.getElementById('category-modal');
-            const content = document.getElementById('category-content');
-            modal.classList.remove('hidden');
             setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
+                pushAppHistory();
+                renderCategoryManagerList();
+                const modal = document.getElementById('category-modal');
+                const content = document.getElementById('category-content');
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                }, 10);
+            }, 300);
         }
 
         function closeCategoryManager() {
+            popAppHistory();
             const modal = document.getElementById('category-modal');
             const content = document.getElementById('category-content');
             modal.classList.add('opacity-0');
@@ -998,7 +1130,7 @@
             render();
 
             if (justCompleted && dateStr === getToday()) {
-                checkDailyGoalCompletion();
+                checkDailyGoalCompletion(dateStr);
             }
         }
 
@@ -1081,7 +1213,8 @@
             const streak = streaks.find(s => s.id === id);
             if (!streak) return;
 
-            currentInsightId = id; // Store ID for actions inside modal
+            pushAppHistory();
+            currentInsightId = id;
             const stats = calculateStats(streak);
 
             document.getElementById('insight-title').textContent = streak.name;
@@ -1103,6 +1236,7 @@
         }
 
         function closeInsights() {
+            popAppHistory();
             currentInsightId = null;
             const modal = document.getElementById('insights-modal');
             const content = document.getElementById('insights-content');
@@ -1113,6 +1247,7 @@
 
         // --- Global Calendar & Details ---
         function openGlobalCalendar() {
+            pushAppHistory();
             globalCalendarOffset = 0;
             renderGlobalCalendar();
             const modal = document.getElementById('global-calendar-modal');
@@ -1125,6 +1260,7 @@
         }
 
         function closeGlobalCalendar() {
+            popAppHistory();
             const modal = document.getElementById('global-calendar-modal');
             const content = document.getElementById('global-calendar-content');
             modal.classList.add('opacity-0');
@@ -1163,7 +1299,6 @@
 
                 streaks.forEach(s => {
                     if (!s.isArchived && s.createdAt <= dateStr && (!s.endDate || s.endDate >= dateStr)) {
-                        // Only count as active/required if no specific days set, OR if this day is a specific day
                         const isRequiredDay = s.specificDays && s.specificDays.length > 0 ? s.specificDays.includes(checkDate.getDay()) : true;
 
                         if (isRequiredDay) {
@@ -1199,10 +1334,24 @@
             document.getElementById('global-cal-grid').innerHTML = html;
         }
 
+        function changeDayDetail(delta) {
+            if (!currentDetailDateStr) return;
+            const [y, m, d] = currentDetailDateStr.split('-');
+            const date = new Date(y, m - 1, d);
+            date.setDate(date.getDate() + delta);
+
+            const nextDateStr = getLocalDateString(date);
+            openDayDetails(nextDateStr);
+        }
+
         function openDayDetails(dateStr) {
+            if (currentDetailDateStr !== dateStr) {
+                pushAppHistory();
+            }
+            currentDetailDateStr = dateStr;
             const [y, m, d] = dateStr.split('-');
             const checkDate = new Date(y, m - 1, d);
-            const displayDate = checkDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            const displayDate = checkDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
             document.getElementById('day-detail-title').textContent = displayDate;
 
@@ -1213,7 +1362,6 @@
 
             streaks.forEach(s => {
                 if (!s.isArchived && s.createdAt <= dateStr && (!s.endDate || s.endDate >= dateStr)) {
-                    // Filter out days that are not required by specificDays
                     const isRequiredDay = s.specificDays && s.specificDays.length > 0 ? s.specificDays.includes(checkDate.getDay()) : true;
 
                     if (isRequiredDay) {
@@ -1244,6 +1392,8 @@
         }
 
         function closeDayDetails() {
+            popAppHistory();
+            currentDetailDateStr = null;
             const modal = document.getElementById('day-detail-modal');
             modal.classList.add('opacity-0');
             modal.firstElementChild.classList.add('translate-y-full', 'scale-95');
@@ -1253,18 +1403,32 @@
         // --- View & Rendering ---
         function toggleArchiveView() {
             isViewingArchived = !isViewingArchived;
-            closeSettings();
+
+            if (isViewingArchived) {
+                pushAppHistory();
+            } else {
+                popAppHistory();
+            }
+
             render();
             document.getElementById('archive-btn-text').textContent = isViewingArchived ? "View Active Habits" : "View Archived Habits";
         }
 
-        function checkDailyGoalCompletion() {
-            const today = getToday();
+        function openArchiveFromSettings() {
+            closeSettings();
+            setTimeout(() => {
+                toggleArchiveView();
+            }, 300);
+        }
+
+        function checkDailyGoalCompletion(dateStr) {
+            if (dateStr !== getToday()) return;
+
             const todayDate = new Date();
 
-            // Only count active streaks expected today
             const activeStreaks = streaks.filter(s => {
-                if (s.endDate && s.endDate < today) return false;
+                if (s.createdAt > dateStr) return false;
+                if (s.endDate && s.endDate < dateStr) return false;
                 if (s.isArchived) return false;
                 if (s.specificDays && s.specificDays.length > 0 && !s.specificDays.includes(todayDate.getDay())) return false;
                 return true;
@@ -1272,7 +1436,7 @@
 
             if (activeStreaks.length === 0) return;
 
-            const completedToday = activeStreaks.filter(s => s.history.includes(today)).length;
+            const completedToday = activeStreaks.filter(s => s.history.includes(dateStr)).length;
             if (completedToday === activeStreaks.length && activeStreaks.length > 0) {
                 fireConfetti();
             }
@@ -1291,8 +1455,9 @@
             const banner = document.getElementById('archive-banner');
             const fab = document.getElementById('fab-btn');
 
-            const today = getToday();
-            const todayDate = new Date();
+            const displayDateStr = getMainDisplayDateStr();
+            const displayDate = getMainDisplayDate();
+            const displayDay = displayDate.getDay();
 
             if (isViewingArchived) {
                 banner.classList.remove('hidden');
@@ -1307,9 +1472,10 @@
             }
 
             const activeStreaks = streaks.filter(s => {
-                if (s.endDate && s.endDate < today) return false;
+                if (s.createdAt > displayDateStr) return false;
+                if (s.endDate && s.endDate < displayDateStr) return false;
                 if (s.isArchived) return false;
-                if (s.specificDays && s.specificDays.length > 0 && !s.specificDays.includes(todayDate.getDay())) return false;
+                if (s.specificDays && s.specificDays.length > 0 && !s.specificDays.includes(displayDay)) return false;
                 return true;
             });
 
@@ -1324,15 +1490,15 @@
             }
 
             dash.classList.remove('hidden');
-            const completedToday = activeStreaks.filter(s => s.history.includes(today)).length;
-            const percentage = Math.round((completedToday / activeStreaks.length) * 100);
+            const completedOnDate = activeStreaks.filter(s => s.history.includes(displayDateStr)).length;
+            const percentage = Math.round((completedOnDate / activeStreaks.length) * 100);
 
-            progText.textContent = `${completedToday} / ${activeStreaks.length}`;
+            progText.textContent = `${completedOnDate} / ${activeStreaks.length}`;
             progBar.style.width = `${percentage}%`;
         }
 
         function initSortable() {
-            if (isViewingArchived) {
+            if (isViewingArchived || mainDisplayDateOffset !== 0) {
                 if (sortableInstance) sortableInstance.destroy();
                 sortableInstance = null;
                 return;
@@ -1363,30 +1529,34 @@
             const emptyEl = document.getElementById('empty-state');
             listEl.innerHTML = '';
 
-            const todayDay = new Date().getDay();
+            const displayDateStr = getMainDisplayDateStr();
+            const displayDate = getMainDisplayDate();
+            const displayDay = displayDate.getDay();
 
             const displayStreaks = streaks.filter(s => {
                 if (s.isArchived !== isViewingArchived) return false;
 
                 if (!isViewingArchived && s.frequency === 'daily' && s.specificDays && s.specificDays.length > 0) {
-                    if (!s.specificDays.includes(todayDay)) return false;
+                    if (!s.specificDays.includes(displayDay)) return false;
                 }
+
+                if (s.createdAt > displayDateStr) return false;
+
                 return true;
             });
 
             if (displayStreaks.length === 0) {
                 emptyEl.classList.remove('hidden');
                 emptyEl.classList.add('flex');
-                emptyEl.querySelector('h2').textContent = isViewingArchived ? "No archived habits" : "No habits scheduled for today";
+                emptyEl.querySelector('h2').textContent = isViewingArchived ? "No archived habits" : (mainDisplayDateOffset === 0 ? "No habits scheduled for today" : "No habits scheduled on this date");
             } else {
                 emptyEl.classList.add('hidden');
                 emptyEl.classList.remove('flex');
-                const today = getToday();
 
                 displayStreaks.forEach(streak => {
-                    const isCompletedToday = streak.history.includes(today);
+                    const isCompletedOnDate = streak.history.includes(displayDateStr);
                     const stats = calculateStats(streak);
-                    const isEnded = streak.endDate && today > streak.endDate;
+                    const isEnded = streak.endDate && displayDateStr > streak.endDate;
 
                     const catObj = categories.find(c => c.id === streak.category) || categories.find(c => c.id === 'other') || DEFAULT_CATEGORIES[4];
                     let badgeHtml = '';
@@ -1413,16 +1583,16 @@
 
                     const li = document.createElement('li');
                     li.setAttribute('data-id', streak.id);
-                    li.className = `slide-up bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border transition-all duration-300 relative overflow-hidden ${isCompletedToday && !isEnded && !streak.isArchived ? 'border-orange-200 dark:border-orange-900/50 bg-orange-50/30 dark:bg-orange-900/10' : 'border-gray-100 dark:border-gray-700'
+                    li.className = `slide-up bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border transition-all duration-300 relative overflow-hidden ${isCompletedOnDate && !isEnded && !streak.isArchived ? 'border-orange-200 dark:border-orange-900/50 bg-orange-50/30 dark:bg-orange-900/10' : 'border-gray-100 dark:border-gray-700'
                         } ${isEnded || streak.isArchived ? 'opacity-70' : ''}`;
 
-                    if (isCompletedToday && !isEnded && !streak.isArchived) {
+                    if (isCompletedOnDate && !isEnded && !streak.isArchived) {
                         li.innerHTML += `<div class="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-orange-400 to-red-400"></div>`;
                     }
 
                     li.innerHTML += `
                         <div class="flex justify-between items-center w-full">
-                            <div class="drag-handle mr-3 text-gray-300 active:text-gray-500 cursor-grab touch-none flex-shrink-0 ${isViewingArchived ? 'hidden' : ''}">
+                            <div class="drag-handle mr-3 text-gray-300 active:text-gray-500 cursor-grab touch-none flex-shrink-0 ${isViewingArchived || mainDisplayDateOffset !== 0 ? 'hidden' : ''}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
                             </div>
 
@@ -1447,7 +1617,7 @@
                             </div>
                             
                             <div class="flex flex-col items-end gap-2 flex-shrink-0">
-                                <button onclick="toggleComplete('${streak.id}')" ${isEnded || streak.isArchived ? 'disabled' : ''} class="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 ${isCompletedToday
+                                <button onclick="toggleComplete('${streak.id}', '${displayDateStr}')" ${isEnded || streak.isArchived ? 'disabled' : ''} class="w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300 active:scale-90 ${isCompletedOnDate
                             ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800'
                             : 'bg-gray-50 dark:bg-gray-700 text-gray-400 border border-gray-200 dark:border-gray-600 active:bg-gray-100 dark:active:bg-gray-600'
                         } ${isEnded || streak.isArchived ? 'opacity-50 cursor-not-allowed' : ''}">
@@ -1475,7 +1645,6 @@
             initSortable();
         }
 
-        // --- Individual Calendar Component ---
         function toggleCalendar(id) {
             const calDiv = document.getElementById(`cal-${id}`);
             if (calDiv.classList.contains('expanded')) {
@@ -1546,7 +1715,6 @@
                     classes += "text-gray-600 dark:text-gray-400 active:bg-gray-100 dark:active:bg-gray-700 ";
                 }
 
-                // Make unrequired days dimmer for better UX
                 if (!isRequiredDay && !isCompleted && !isToday) {
                     classes += "opacity-30 ";
                 }
@@ -1608,6 +1776,7 @@
         }
 
         function openFormModal() {
+            pushAppHistory();
             document.getElementById('streak-form').reset();
             document.getElementById('habit-id').value = '';
             document.getElementById('modal-title').textContent = 'New Habit';
@@ -1627,6 +1796,7 @@
             const streak = streaks.find(s => s.id === id);
             if (!streak) return;
 
+            pushAppHistory();
             document.getElementById('habit-id').value = streak.id;
             document.getElementById('habit-name').value = streak.name;
 
@@ -1662,6 +1832,7 @@
         }
 
         function closeFormModal() {
+            popAppHistory();
             formModal.classList.add('opacity-0');
             formContent.classList.add('translate-y-full');
             setTimeout(() => formModal.classList.add('hidden'), 300);
@@ -1670,6 +1841,7 @@
         document.getElementById('streak-form').addEventListener('submit', saveStreak);
 
         function openSettings() {
+            pushAppHistory();
             settingsModal.classList.remove('hidden');
             setTimeout(() => {
                 settingsModal.classList.remove('opacity-0');
@@ -1678,6 +1850,7 @@
         }
 
         function closeSettings() {
+            popAppHistory();
             settingsModal.classList.add('opacity-0');
             settingsContent.classList.add('translate-y-full');
             setTimeout(() => settingsModal.classList.add('hidden'), 300);
@@ -1751,16 +1924,17 @@
             event.target.value = '';
         }
 
-        // Close Modals on overlay click
+        // Only close active modal safely on overlay click
         [formModal, settingsModal, document.getElementById('category-modal'), document.getElementById('insights-modal'), document.getElementById('global-calendar-modal'), document.getElementById('day-detail-modal')].forEach(modal => {
+            if (!modal) return;
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
-                    closeFormModal();
-                    closeSettings();
-                    closeCategoryManager();
-                    closeInsights();
-                    closeGlobalCalendar();
-                    closeDayDetails();
+                    if (modal.id === 'form-modal') closeFormModal();
+                    else if (modal.id === 'settings-modal') closeSettings();
+                    else if (modal.id === 'category-modal') closeCategoryManager();
+                    else if (modal.id === 'insights-modal') closeInsights();
+                    else if (modal.id === 'global-calendar-modal') closeGlobalCalendar();
+                    else if (modal.id === 'day-detail-modal') closeDayDetails();
                 }
             });
         });
@@ -1771,7 +1945,7 @@
 
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
-                document.getElementById('date-display').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+                updateMainDateDisplay();
                 render();
             }
         });

@@ -1,7 +1,7 @@
 {
     "name": "Streak Tracker",
     "short_name": "Streaker",
-    "start_url": "/myapps/streak",
+    "start_url": "",
     "icons": [
         {
             "src": "https://devnamdev2003.github.io/myapps/streak/img/favicon_io/favicon-16x16.png",

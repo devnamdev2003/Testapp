@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video & Audio Sync Mixer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styling for range sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            margin-top: -7px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #4b5563;
+            border-radius: 2px;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+
+        /* Hide cursor when inactive in fullscreen */
+        .hide-cursor {
+            cursor: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen font-sans flex flex-col items-center py-6 px-2 sm:py-10 sm:px-4">
+
+    <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Main Player Column -->
+        <div class="lg:col-span-2 bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 flex flex-col">
+
+            <!-- Header -->
+            <div class="p-4 sm:p-6 border-b border-gray-700 bg-gray-800/50 flex justify-between items-center">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-blue-500">
+                            <path d="M12 2v20" />
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                        SyncMixer Pro
+                    </h1>
+                    <p id="player-subtitle" class="text-gray-400 text-xs sm:text-sm mt-1 truncate">Select a video from
+                        the playlist to begin.</p>
+                </div>
+                <button id="header-shortcut-btn"
+                    class="hidden sm:flex text-gray-400 hover:text-white items-center gap-2 text-sm bg-gray-700 px-3 py-1.5 rounded-lg border border-gray-600 transition"
+                    title="Show Shortcuts (Shift + ?)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    Shortcuts
+                </button>
+            </div>
+
+            <!-- Player Container (Handles Fullscreen & Responsive aspect ratio) -->
+            <div id="player-container"
+                class="relative bg-black w-full aspect-video flex flex-col items-center justify-center overflow-hidden rounded-b-2xl lg:rounded-b-none focus:outline-none"
+                tabindex="0">
+
+                <!-- Hidden Audio Element -->
+                <audio id="main-audio"></audio>
+
+                <!-- Main Video Element -->
+                <video id="main-video" class="w-full h-full object-contain cursor-pointer" playsinline
+                    preload="metadata">
+                    Your browser does not support the video tag.
+                </video>
+
+                <!-- Loading overlay -->
+                <div id="loading-overlay"
+                    class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center hidden z-30">
+                    <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-600 border-t-blue-500 mb-3">
+                    </div>
+                    <p class="text-blue-400 font-medium">Loading Media...</p>
+                </div>
+
+                <!-- Big Play Button Overlay -->
+                <button id="big-play-btn"
+                    class="absolute inset-0 flex items-center justify-center bg-black/40 transition-opacity duration-300 z-10 opacity-100">
+                    <div
+                        class="bg-blue-600/90 text-white rounded-full p-4 sm:p-6 hover:bg-blue-500 hover:scale-110 transition-all shadow-xl backdrop-blur-sm">
+                        <svg id="big-play-icon" xmlns="http://www.w3.org/2000/svg" width="40" height="40"
+                            viewBox="0 0 24 24" fill="currentColor" stroke="none" class="sm:w-12 sm:h-12">
+                            <polygon points="5 3 19 12 5 21 5 3" />
+                        </svg>
+                    </div>
+                </button>
+
+                <!-- Controls Overlay Bar -->
+                <div id="controls-bar"
+                    class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent p-3 sm:p-5 flex flex-col gap-2 transition-opacity duration-300 z-20 opacity-100">
+
+                    <!-- Seek Bar -->
+                    <div class="flex items-center gap-3">
+                        <span id="current-time" class="text-xs font-mono text-gray-300 w-10 text-right">0:00</span>
+                        <input type="range" id="seek-bar" class="flex-1 h-1.5" value="0" step="0.1" min="0" max="100">
+                        <span id="total-time" class="text-xs font-mono text-gray-300 w-10">0:00</span>
+                    </div>
+
+                    <!-- Bottom Controls Row -->
+                    <div class="flex flex-wrap items-center justify-between gap-y-3 mt-1">
+
+                        <!-- Left Controls: Play, Skip -->
+                        <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+                            <button id="skip-backward-btn"
+                                class="text-gray-300 hover:text-white p-1.5 sm:p-2 rounded-full hover:bg-white/10 transition"
+                                title="Skip backward 5s (Left Arrow)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                    <path d="M3 3v5h5" /><text x="12" y="16" font-size="8" font-weight="bold"
+                                        text-anchor="middle" font-family="sans-serif" stroke="none"
+                                        fill="currentColor">5</text>
+                                </svg>
+                            </button>
+
+                            <button id="play-pause-btn" class="text-white hover:text-blue-400 transition"
+                                title="Play/Pause (Space)">
+                                <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="28" height="28"
+                                    viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                                    <polygon points="5 3 19 12 5 21 5 3" />
+                                </svg>
+                                <svg id="pause-icon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="28"
+                                    height="28" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                                    <rect x="6" y="4" width="4" height="16" />
+                                    <rect x="14" y="4" width="4" height="16" />
+                                </svg>
+                            </button>
+
+                            <button id="skip-forward-btn"
+                                class="text-gray-300 hover:text-white p-1.5 sm:p-2 rounded-full hover:bg-white/10 transition"
+                                title="Skip forward 5s (Right Arrow)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                    <path d="M21 3v5h-5" /><text x="12" y="16" font-size="8" font-weight="bold"
+                                        text-anchor="middle" font-family="sans-serif" stroke="none"
+                                        fill="currentColor">5</text>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Center: Audio/Video Mixer (Wraps on small screens) -->
+                        <div
+                            class="flex items-center gap-3 bg-gray-800/60 px-3 py-1.5 rounded-lg border border-gray-600/50 order-last md:order-none w-full md:w-auto justify-center mx-auto md:mx-4">
+                            <span
+                                class="text-[10px] text-gray-400 font-bold uppercase tracking-wider hidden sm:block">Mixer</span>
+
+                            <!-- Video Vol -->
+                            <div class="flex items-center gap-1.5" title="Video Volume">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="text-gray-400">
+                                    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+                                    <line x1="7" x2="7" y1="2" y2="22" />
+                                    <line x1="17" x2="17" y1="2" y2="22" />
+                                    <line x1="2" x2="22" y1="12" y2="12" />
+                                    <line x1="2" x2="7" y1="7" y2="7" />
+                                    <line x1="2" x2="7" y1="17" y2="17" />
+                                    <line x1="17" x2="22" y1="17" y2="17" />
+                                    <line x1="17" x2="22" y1="7" y2="7" />
+                                </svg>
+                                <input type="range" id="video-volume" class="w-16 sm:w-20" min="0" max="1" step="0.05"
+                                    value="0.8">
+                            </div>
+
+                            <div class="w-px h-5 bg-gray-600 mx-1"></div>
+
+                            <!-- Audio Vol -->
+                            <div class="flex items-center gap-1.5" title="Background Audio Volume">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="text-gray-400">
+                                    <path d="M9 18V5l12-2v13" />
+                                    <circle cx="6" cy="18" r="3" />
+                                    <circle cx="18" cy="16" r="3" />
+                                </svg>
+                                <input type="range" id="audio-volume" class="w-16 sm:w-20" min="0" max="1" step="0.05"
+                                    value="0.5">
+                            </div>
+                        </div>
+
+                        <!-- Right Controls: Speed, Fullscreen -->
+                        <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+                            <button id="speed-btn"
+                                class="text-xs sm:text-sm font-bold text-gray-300 hover:text-white w-8 text-center"
+                                title="Playback Speed (Shift + > or <)">1x</button>
+
+                            <button id="fullscreen-btn"
+                                class="text-gray-300 hover:text-white p-1 sm:p-2 rounded hover:bg-white/10 transition"
+                                title="Fullscreen (F)">
+                                <svg id="fs-enter-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                                </svg>
+                                <svg id="fs-exit-icon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20"
+                                    height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Playlist Column -->
+        <div
+            class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-[400px] lg:h-full lg:max-h-[700px]">
+            <div class="p-4 sm:p-6 border-b border-gray-700 bg-gray-800/50">
+                <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="text-blue-500">
+                        <path d="M8 6h13" />
+                        <path d="M8 12h13" />
+                        <path d="M8 18h13" />
+                        <path d="M3 6h.01" />
+                        <path d="M3 12h.01" />
+                        <path d="M3 18h.01" />
+                    </svg>
+                    Playlist
+                </h2>
+            </div>
+            <div class="p-3 sm:p-4 overflow-y-auto flex-1">
+                <ul id="playlist-container" class="space-y-2">
+                    <!-- Playlist items injected via JS -->
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Instructions / Footer -->
+    <div class="max-w-6xl w-full mt-6 text-gray-500 text-xs sm:text-sm text-center px-4 mb-10">
+        <p class="mb-2">The video timeline acts as the master clock. Play, pause, skipping, and seeking will
+            automatically sync the background audio file perfectly.</p>
+        <p class="text-gray-400">Press <kbd class="bg-gray-800 px-2 py-0.5 rounded border border-gray-700">Shift +
+                ?</kbd> to view all keyboard shortcuts.</p>
+    </div>
+
+    <!-- Shortcut Modal Overlay -->
+    <div id="shortcut-modal"
+        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hidden backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div
+            class="bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full mx-4 transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="text-blue-400">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    Keyboard Shortcuts
+                </h3>
+                <button id="close-modal-btn"
+                    class="text-gray-400 hover:text-white transition p-1 bg-gray-700/50 rounded-lg hover:bg-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-sm text-gray-300">
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                    <span>Play / Pause</span>
+                    <kbd
+                        class="bg-gray-900 border border-gray-600 px-2 py-1 rounded text-xs font-mono shadow-inner text-white">Space</kbd>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                    <span>Toggle Fullscreen</span>
+                    <kbd
+                        class="bg-gray-900 border border-gray-600 px-2 py-1 rounded text-xs font-mono shadow-inner text-white">F</kbd>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                    <span>Skip Forward / Backward 5s</span>
+                    <div class="flex gap-1">
+                        <kbd
+                            class="bg-gray-900 border border-gray-600 px-2 py-1 rounded text-xs font-mono shadow-inner text-white">&larr;</kbd>
+                        <kbd
+                            class="bg-gray-900 border border-gray-600 px-2 py-1 rounded text-xs font-mono shadow-inner text-white">&rarr;</kbd>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                    <span>Increase / Decrease Volume</span>
+                    <div class="flex gap-1">
+                        <kbd
+                            class="bg-gray-900 border border-gray-600 px-2 py-1 rounded text-xs font-mono shadow-inner text-white">&uarr;</kbd>
+                        <kbd
+                            class="bg-gray-900 border border-gray-600 px-2 py-1 rounded text-xs font-mono shadow-inner text-white">&darr;</kbd>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                    <span>Increase Speed</span>
+                    <kbd
+                        class="bg-gray-900 border border-gray-600 px-2 py-1 rounded text-xs font-mono shadow-inner text-white">Shift
+                        + ></kbd>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                    <span>Decrease Speed</span>
+                    <kbd
+                        class="bg-gray-900 border border-gray-600 px-2 py-1 rounded text-xs font-mono shadow-inner text-white">Shift
+                        + << /kbd>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>Show Shortcuts Modal</span>
+                    <kbd
+                        class="bg-gray-900 border border-gray-600 px-2 py-1 rounded text-xs font-mono shadow-inner text-white">Shift
+                        + ?</kbd>
+                </div>
+            </div>
+            <button id="close-modal-bottom-btn"
+                class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg transition font-medium">Got
+                it!</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- JSON Data ---
+            const mediaList = [
+                {
+                    title: "Spring boot jwt",
+                    description: "",
+                    videoPath: "./video.mp4",
+                    audioPath: "./audio.mp4"
+                }
+            ];
+
+            let currentIndex = 0;
+
+            // DOM Elements
+            const playerContainer = document.getElementById('player-container');
+            const video = document.getElementById('main-video');
+            const audio = document.getElementById('main-audio');
+            const playerSubtitle = document.getElementById('player-subtitle');
+            const playlistContainer = document.getElementById('playlist-container');
+            const controlsBar = document.getElementById('controls-bar');
+
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const bigPlayBtn = document.getElementById('big-play-btn');
+            const playIcon = document.getElementById('play-icon');
+            const pauseIcon = document.getElementById('pause-icon');
+
+            const skipForwardBtn = document.getElementById('skip-forward-btn');
+            const skipBackwardBtn = document.getElementById('skip-backward-btn');
+            const speedBtn = document.getElementById('speed-btn');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const fsEnterIcon = document.getElementById('fs-enter-icon');
+            const fsExitIcon = document.getElementById('fs-exit-icon');
+
+            const seekBar = document.getElementById('seek-bar');
+            const currentTimeEl = document.getElementById('current-time');
+            const totalTimeEl = document.getElementById('total-time');
+
+            const videoVolume = document.getElementById('video-volume');
+            const audioVolume = document.getElementById('audio-volume');
+
+            const loadingOverlay = document.getElementById('loading-overlay');
+
+            // Modal Elements
+            const shortcutModal = document.getElementById('shortcut-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const closeModalBottomBtn = document.getElementById('close-modal-bottom-btn');
+            const headerShortcutBtn = document.getElementById('header-shortcut-btn');
+
+            let isDraggingSeek = false;
+            let idleTimeout;
+            let isModalOpen = false;
+            const playbackSpeeds = [0.5, 0.75, 1, 1.25, 1.5, 2];
+            let currentSpeedIndex = 2; // Index of 1 (normal speed)
+
+            // Remove focus from buttons and range inputs after clicking 
+            // so keyboard shortcuts work smoothly globally
+            document.querySelectorAll('button, input').forEach(el => {
+                el.addEventListener('mouseup', function () {
+                    this.blur();
+                });
+            });
+
+            // --- 1. Initialization & Render Logic ---
+            const renderPlaylist = () => {
+                playlistContainer.innerHTML = '';
+
+                mediaList.forEach((item, index) => {
+                    const li = document.createElement('li');
+
+                    li.innerHTML = `
+                        <button class="w-full text-left p-3 rounded-lg transition border hover:bg-gray-700 flex flex-col gap-1 ${index === currentIndex ? 'bg-gray-700 border-blue-500/50' : 'bg-gray-900 border-transparent hover:border-gray-600'}" data-index="${index}">
+                            <span class="font-medium text-gray-200 text-sm sm:text-base">${item.title}</span>
+                            <span class="text-xs text-gray-500">${item.description}</span>
+                        </button>
+                    `;
+
+                    li.querySelector('button').addEventListener('click', () => {
+                        loadMedia(index);
+                    });
+
+                    playlistContainer.appendChild(li);
+                });
+            };
+
+            const loadMedia = (index) => {
+                currentIndex = index;
+                const selectedMedia = mediaList[index];
+
+                renderPlaylist(); // Update active UI state
+                playerSubtitle.textContent = "Now Playing: " + selectedMedia.title;
+                loadingOverlay.classList.remove('hidden');
+
+                video.src = selectedMedia.videoPath;
+                audio.src = selectedMedia.audioPath;
+
+                video.volume = videoVolume.value;
+                audio.volume = audioVolume.value;
+
+                // Keep selected speed active across videos
+                applyPlaybackSpeed(playbackSpeeds[currentSpeedIndex]);
+
+                video.load();
+                audio.load();
+
+                updatePlayPauseUI(false);
+                seekBar.value = 0;
+                currentTimeEl.textContent = "0:00";
+
+                // Play automatically when selected from list
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => console.log("User gesture required to play"));
+                }
+            };
+
+            video.addEventListener('canplay', () => loadingOverlay.classList.add('hidden'));
+
+            // --- 2. Master Sync Logic (Video controls Audio) ---
+            video.addEventListener('play', () => {
+                audio.play().catch(e => console.log("Audio play prevented", e));
+                updatePlayPauseUI(true);
+                resetIdleTimer(); // Hide UI after inactivity
+            });
+
+            video.addEventListener('pause', () => {
+                audio.pause();
+                updatePlayPauseUI(false);
+                resetIdleTimer(); // Will keep controls visible when paused
+            });
+
+            video.addEventListener('seeking', syncAudioToVideo);
+            video.addEventListener('seeked', syncAudioToVideo);
+
+            // Re-sync when tab regains focus
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && !video.paused) {
+                    syncAudioToVideo();
+                }
+            });
+
+            video.addEventListener('timeupdate', () => {
+                if (!isDraggingSeek) {
+                    seekBar.value = video.currentTime;
+                    currentTimeEl.textContent = formatTime(video.currentTime);
+                }
+
+                // Drift correction
+                // Only sync if the document is visible to prevent audio stuttering in background tabs!
+                if (!document.hidden && Math.abs(video.currentTime - audio.currentTime) > 0.2 && !video.paused) {
+                    syncAudioToVideo();
+                }
+            });
+
+            function syncAudioToVideo() {
+                if (audio.duration && video.currentTime <= audio.duration) {
+                    audio.currentTime = video.currentTime;
+                } else if (!audio.duration) {
+                    audio.currentTime = video.currentTime;
+                }
+            }
+
+            video.addEventListener('loadedmetadata', () => {
+                seekBar.max = video.duration;
+                totalTimeEl.textContent = formatTime(video.duration);
+            });
+
+            // --- 3. UI Control Implementations ---
+
+            const togglePlayPause = () => {
+                if (video.paused) {
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) playPromise.catch(() => { });
+                } else {
+                    video.pause();
+                }
+            };
+
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            bigPlayBtn.addEventListener('click', togglePlayPause);
+            video.addEventListener('click', togglePlayPause);
+
+            const updatePlayPauseUI = (isPlaying) => {
+                if (isPlaying) {
+                    playIcon.classList.add('hidden');
+                    pauseIcon.classList.remove('hidden');
+
+                    // Hide Big Play Button gracefully without blocking clicks later
+                    bigPlayBtn.classList.replace('opacity-100', 'opacity-0');
+                    setTimeout(() => { if (!video.paused) bigPlayBtn.classList.add('pointer-events-none'); }, 300);
+                } else {
+                    playIcon.classList.remove('hidden');
+                    pauseIcon.classList.add('hidden');
+
+                    // Show Big Play Button
+                    bigPlayBtn.classList.remove('pointer-events-none');
+                    bigPlayBtn.classList.replace('opacity-0', 'opacity-100');
+                }
+            };
+
+            // Interactive Idle Timer (Auto-Hide Controls overlay)
+            const hideControls = () => {
+                if (!video.paused) {
+                    playerContainer.classList.add('hide-cursor');
+                    controlsBar.classList.replace('opacity-100', 'opacity-0');
+                }
+            };
+
+            const resetIdleTimer = () => {
+                playerContainer.classList.remove('hide-cursor');
+                controlsBar.classList.replace('opacity-0', 'opacity-100');
+                clearTimeout(idleTimeout);
+                if (!video.paused) {
+                    idleTimeout = setTimeout(hideControls, 2500); // 2.5s to disappear
+                }
+            };
+
+            playerContainer.addEventListener('mousemove', resetIdleTimer);
+            playerContainer.addEventListener('touchstart', resetIdleTimer);
+            controlsBar.addEventListener('mouseenter', () => clearTimeout(idleTimeout));
+            controlsBar.addEventListener('mouseleave', resetIdleTimer);
+
+            // Seek Bar Interactions
+            seekBar.addEventListener('input', () => {
+                isDraggingSeek = true;
+                currentTimeEl.textContent = formatTime(seekBar.value);
+            });
+
+            seekBar.addEventListener('change', () => {
+                video.currentTime = seekBar.value;
+                isDraggingSeek = false;
+            });
+
+            // Skip Buttons (+5s / -5s)
+            skipForwardBtn.addEventListener('click', () => {
+                video.currentTime = Math.min(video.currentTime + 5, video.duration);
+            });
+
+            skipBackwardBtn.addEventListener('click', () => {
+                video.currentTime = Math.max(video.currentTime - 5, 0);
+            });
+
+            // Speed Control
+            function applyPlaybackSpeed(speed) {
+                video.playbackRate = speed;
+                audio.playbackRate = speed;
+                speedBtn.textContent = speed + 'x';
+            }
+
+            speedBtn.addEventListener('click', () => {
+                currentSpeedIndex = (currentSpeedIndex + 1) % playbackSpeeds.length;
+                applyPlaybackSpeed(playbackSpeeds[currentSpeedIndex]);
+            });
+
+            // Fullscreen Logic
+            const toggleFullscreen = () => {
+                if (!document.fullscreenElement) {
+                    if (playerContainer.requestFullscreen) playerContainer.requestFullscreen();
+                    else if (playerContainer.webkitRequestFullscreen) playerContainer.webkitRequestFullscreen();
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                }
+            };
+
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            video.addEventListener('dblclick', toggleFullscreen);
+
+            document.addEventListener('fullscreenchange', () => {
+                if (document.fullscreenElement) {
+                    fsEnterIcon.classList.add('hidden');
+                    fsExitIcon.classList.remove('hidden');
+                } else {
+                    fsEnterIcon.classList.remove('hidden');
+                    fsExitIcon.classList.add('hidden');
+                }
+            });
+
+            // Volume Controls (Mixer)
+            videoVolume.addEventListener('input', (e) => video.volume = e.target.value);
+            audioVolume.addEventListener('input', (e) => audio.volume = e.target.value);
+
+            // --- Modal Logic ---
+            const toggleModal = () => {
+                if (isModalOpen) {
+                    shortcutModal.classList.replace('opacity-100', 'opacity-0');
+                    shortcutModal.querySelector('div').classList.replace('scale-100', 'scale-95');
+                    setTimeout(() => shortcutModal.classList.add('hidden'), 300);
+                } else {
+                    shortcutModal.classList.remove('hidden');
+                    // Force a reflow before adding classes so the transition plays out properly
+                    void shortcutModal.offsetWidth;
+                    shortcutModal.classList.replace('opacity-0', 'opacity-100');
+                    shortcutModal.querySelector('div').classList.replace('scale-95', 'scale-100');
+                }
+                isModalOpen = !isModalOpen;
+            };
+
+            headerShortcutBtn.addEventListener('click', toggleModal);
+            closeModalBtn.addEventListener('click', toggleModal);
+            closeModalBottomBtn.addEventListener('click', toggleModal);
+
+            // Close modal when clicking outside of it
+            shortcutModal.addEventListener('click', (e) => {
+                if (e.target === shortcutModal) toggleModal();
+            });
+
+            // --- Keyboard Shortcuts ---
+            document.addEventListener('keydown', (e) => {
+                // Ignore if the user is actively focused on an input element
+                if (document.activeElement.tagName === 'INPUT') return;
+
+                // Shift + ? to toggle modal
+                if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+                    e.preventDefault();
+                    toggleModal();
+                    return;
+                }
+
+                // If modal is open, let escape close it and stop handling video controls
+                if (isModalOpen) {
+                    if (e.key === 'Escape') toggleModal();
+                    return;
+                }
+
+                // Shift + > or Shift + < for Playback Speed
+                if (e.key === '>' || (e.shiftKey && e.key === '.')) {
+                    e.preventDefault();
+                    currentSpeedIndex = Math.min(playbackSpeeds.length - 1, currentSpeedIndex + 1);
+                    applyPlaybackSpeed(playbackSpeeds[currentSpeedIndex]);
+                    return;
+                }
+                if (e.key === '<' || (e.shiftKey && e.key === ',')) {
+                    e.preventDefault();
+                    currentSpeedIndex = Math.max(0, currentSpeedIndex - 1);
+                    applyPlaybackSpeed(playbackSpeeds[currentSpeedIndex]);
+                    return;
+                }
+
+                switch (e.key) {
+                    case ' ':
+                    case 'k':
+                    case 'K':
+                        e.preventDefault(); // Prevent page scroll
+                        togglePlayPause();
+                        break;
+                    case 'f':
+                    case 'F':
+                        e.preventDefault();
+                        toggleFullscreen();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        // Skip forward 5s
+                        video.currentTime = Math.min(video.currentTime + 5, video.duration);
+                        break;
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        // Skip backward 5s
+                        video.currentTime = Math.max(video.currentTime - 5, 0);
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        // Increase both volumes by 5%
+                        video.volume = Math.min(1, video.volume + 0.05);
+                        audio.volume = Math.min(1, audio.volume + 0.05);
+                        videoVolume.value = video.volume;
+                        audioVolume.value = audio.volume;
+                        break;
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        // Decrease both volumes by 5%
+                        video.volume = Math.max(0, video.volume - 0.05);
+                        audio.volume = Math.max(0, audio.volume - 0.05);
+                        videoVolume.value = video.volume;
+                        audioVolume.value = audio.volume;
+                        break;
+                }
+            });
+
+            // --- 4. Utilities ---
+            function formatTime(seconds) {
+                if (isNaN(seconds) || seconds === Infinity) return "0:00";
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            // Init
+            renderPlaylist();
+            if (mediaList.length > 0) loadMedia(0);
+        });
+    </script>
+</body>
+
+</html>

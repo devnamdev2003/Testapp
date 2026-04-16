@@ -26,7 +26,7 @@
             transition: transform 0.15s ease, background-color 0.15s ease;
         }
 
-        input[type=range]::-webkit-slider-thumb:hover {
+        input[type=range]::-webkit-slider-thumb:active {
             transform: scale(1.3);
             background: #60a5fa;
         }
@@ -38,10 +38,6 @@
             background: rgba(75, 85, 99, 0.6);
             border-radius: 2px;
             transition: background 0.15s ease;
-        }
-
-        input[type=range]:hover::-webkit-slider-runnable-track {
-            background: rgba(107, 114, 128, 0.8);
         }
 
         input[type=range]:focus {
@@ -61,10 +57,6 @@
         ::-webkit-scrollbar-thumb {
             background: #4b5563;
             border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #6b7280;
         }
 
         /* Hide cursor when inactive in fullscreen */
@@ -101,7 +93,7 @@
                         to begin</p>
                 </div>
                 <button id="header-shortcut-btn"
-                    class="hidden sm:flex text-gray-400 hover:text-white items-center gap-2 text-sm bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg border border-gray-700 transition shadow-sm"
+                    class="hidden sm:flex text-gray-400 active:text-white items-center gap-2 text-sm bg-transparent active:bg-gray-800 px-3 py-1.5 rounded-lg transition"
                     title="Show Shortcuts (Shift + ?)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -126,11 +118,40 @@
                     Your browser does not support the video tag.
                 </video>
 
+                <!-- Loading / Buffering overlay (Hidden by default) -->
+                <div id="loading-overlay"
+                    class="absolute inset-0 bg-gray-900/80 backdrop-blur-sm flex flex-col items-center justify-center hidden z-30 transition-opacity duration-300">
+                    <div class="relative w-16 h-16 flex items-center justify-center mb-4">
+                        <div class="absolute inset-0 rounded-full border-4 border-gray-700"></div>
+                        <div
+                            class="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent animate-spin">
+                        </div>
+                    </div>
+                    <p class="text-blue-400 font-medium tracking-wide">Buffering Media...</p>
+                </div>
+
+                <!-- Error Overlay (Hidden by default) -->
+                <div id="error-overlay"
+                    class="absolute inset-0 bg-gray-900/90 backdrop-blur-md flex flex-col items-center justify-center hidden z-40 transition-opacity duration-300">
+                    <div class="bg-red-500/20 p-4 rounded-full mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="text-red-500">
+                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Media Error</h3>
+                    <p id="error-message" class="text-gray-400 text-sm max-w-sm text-center px-4">Unable to load the
+                        media. The URL might be invalid or broken.</p>
+                </div>
+
                 <!-- Big Play Button Overlay -->
                 <button id="big-play-btn"
                     class="absolute inset-0 flex items-center justify-center transition-all duration-300 z-10 opacity-100 group">
                     <div
-                        class="text-white group-hover:text-blue-400 group-hover:scale-110 transition-transform duration-300 drop-shadow-2xl">
+                        class="text-white active:text-blue-400 active:scale-95 transition-transform duration-200 drop-shadow-2xl">
                         <svg id="big-play-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64"
                             viewBox="0 0 24 24" fill="currentColor" stroke="none" class="sm:w-20 sm:h-20 ml-1">
                             <polygon points="5 3 19 12 5 21 5 3" />
@@ -156,11 +177,11 @@
                         <!-- Left Controls: Play, Skip -->
                         <div class="flex items-center gap-1 sm:gap-2 shrink-0">
                             <button id="skip-backward-btn"
-                                class="text-gray-300 hover:text-white p-2 transition tooltip group"
+                                class="text-gray-300 active:text-white p-2 transition bg-transparent active:scale-95"
                                 title="Skip backward 5s">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" class="group-hover:-translate-x-0.5 transition-transform">
+                                    stroke-linejoin="round">
                                     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                                     <path d="M3 3v5h5" /><text x="12" y="16" font-size="8" font-weight="bold"
                                         text-anchor="middle" font-family="sans-serif" stroke="none"
@@ -169,7 +190,7 @@
                             </button>
 
                             <button id="play-pause-btn"
-                                class="text-white hover:text-blue-400 p-2 transition transform hover:scale-110 active:scale-95"
+                                class="text-white p-2 transition transform active:scale-95 bg-transparent"
                                 title="Play/Pause">
                                 <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="28" height="28"
                                     viewBox="0 0 24 24" fill="currentColor" stroke="none">
@@ -183,11 +204,11 @@
                             </button>
 
                             <button id="skip-forward-btn"
-                                class="text-gray-300 hover:text-white p-2 transition tooltip group"
+                                class="text-gray-300 active:text-white p-2 transition bg-transparent active:scale-95"
                                 title="Skip forward 5s">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" class="group-hover:translate-x-0.5 transition-transform">
+                                    stroke-linejoin="round">
                                     <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
                                     <path d="M21 3v5h-5" /><text x="12" y="16" font-size="8" font-weight="bold"
                                         text-anchor="middle" font-family="sans-serif" stroke="none"
@@ -200,11 +221,12 @@
                         <div
                             class="flex items-center gap-3 px-3 py-1.5 order-last md:order-none w-full md:w-auto justify-center mx-auto">
                             <span
-                                class="text-[10px] text-gray-400 font-bold uppercase tracking-widest hidden sm:block">Mixer</span>
+                                class="text-[10px] text-gray-400 font-bold uppercase tracking-widest hidden sm:block drop-shadow-md">Mixer</span>
 
                             <!-- Video Vol -->
                             <div class="flex items-center gap-1.5" title="Video Volume">
-                                <button id="video-mute-btn" class="text-gray-300 hover:text-white transition p-1">
+                                <button id="video-mute-btn"
+                                    class="text-gray-300 active:text-white transition p-1 bg-transparent drop-shadow-md active:scale-95">
                                     <svg id="video-vol-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                         stroke-linecap="round" stroke-linejoin="round">
@@ -232,15 +254,17 @@
                                         <line x1="2" y1="2" x2="22" y2="22" />
                                     </svg>
                                 </button>
-                                <input type="range" id="video-volume" class="w-16 sm:w-20" min="0" max="1" step="0.05"
-                                    value="0.8">
+                                <input type="range" id="video-volume" class="w-16 sm:w-20 drop-shadow-md" min="0"
+                                    max="1" step="0.05" value="0.8">
                             </div>
 
                             <div class="w-px h-5 bg-white/20 mx-1"></div>
 
                             <!-- Audio Vol -->
-                            <div class="flex items-center gap-1.5" title="Background Audio Volume">
-                                <button id="audio-mute-btn" class="text-gray-300 hover:text-white transition p-1">
+                            <div class="flex items-center gap-1.5" title="Background Audio Volume"
+                                id="audio-mixer-container">
+                                <button id="audio-mute-btn"
+                                    class="text-gray-300 active:text-white transition p-1 bg-transparent drop-shadow-md active:scale-95">
                                     <svg id="audio-vol-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                         stroke-linecap="round" stroke-linejoin="round">
@@ -258,18 +282,19 @@
                                         <line x1="2" y1="2" x2="22" y2="22" />
                                     </svg>
                                 </button>
-                                <input type="range" id="audio-volume" class="w-16 sm:w-20" min="0" max="1" step="0.05"
-                                    value="0.5">
+                                <input type="range" id="audio-volume" class="w-16 sm:w-20 drop-shadow-md" min="0"
+                                    max="1" step="0.05" value="0.5">
                             </div>
                         </div>
 
                         <!-- Right Controls: Speed, PiP, Fullscreen -->
                         <div class="flex items-center gap-1 sm:gap-2 shrink-0">
                             <button id="speed-btn"
-                                class="text-xs sm:text-sm font-bold text-gray-300 hover:text-white w-10 text-center py-1.5 transition"
+                                class="text-xs sm:text-sm font-bold text-gray-300 active:text-white w-10 text-center py-1.5 transition bg-transparent drop-shadow-md active:scale-95"
                                 title="Playback Speed">1x</button>
 
-                            <button id="pip-btn" class="text-gray-300 hover:text-white p-2 transition"
+                            <button id="pip-btn"
+                                class="text-gray-300 active:text-white p-2 transition bg-transparent drop-shadow-md active:scale-95"
                                 title="Picture-in-Picture">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -279,7 +304,8 @@
                                 </svg>
                             </button>
 
-                            <button id="fullscreen-btn" class="text-gray-300 hover:text-white p-2 transition"
+                            <button id="fullscreen-btn"
+                                class="text-gray-300 active:text-white p-2 transition bg-transparent drop-shadow-md active:scale-95"
                                 title="Fullscreen (F)">
                                 <svg id="fs-enter-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -317,8 +343,19 @@
                     </svg>
                     Up Next
                 </h2>
-                <span class="text-xs font-mono text-gray-500 bg-gray-800 px-2 py-1 rounded-md" id="playlist-count">0
-                    items</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-mono text-gray-500 bg-gray-800 px-2 py-1 rounded-md" id="playlist-count">0
+                        items</span>
+                    <button id="open-add-media-modal"
+                        class="text-white active:text-blue-400 bg-blue-600/20 active:bg-blue-600/30 p-1.5 rounded-md transition active:scale-95"
+                        title="Add Custom Media">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
             </div>
             <div class="p-3 overflow-y-auto flex-1">
                 <ul id="playlist-container" class="space-y-1.5">
@@ -338,6 +375,67 @@
             keyboard shortcuts.</p>
     </div>
 
+    <!-- Add/Edit Media Modal Overlay -->
+    <div id="add-media-modal"
+        class="fixed inset-0 bg-gray-950/80 z-50 flex items-center justify-center hidden backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div
+            class="bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full mx-4 transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2" id="modal-form-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="text-blue-500">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Custom Media
+                </h3>
+                <button id="close-add-modal-btn"
+                    class="text-gray-400 active:text-white transition p-1.5 bg-gray-800 rounded-lg active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1 tracking-wide uppercase">Title
+                        *</label>
+                    <input type="text" id="custom-title"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition"
+                        placeholder="My Awesome Mix">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1 tracking-wide uppercase">Description
+                        (Optional)</label>
+                    <input type="text" id="custom-desc"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition"
+                        placeholder="Custom audio track over video">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1 tracking-wide uppercase">Video URL
+                        *</label>
+                    <input type="url" id="custom-video-url"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition"
+                        placeholder="https://example.com/video.mp4">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1 tracking-wide uppercase">Background
+                        Audio URL (Optional)</label>
+                    <input type="url" id="custom-audio-url"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition"
+                        placeholder="Leave empty to use native video sound">
+                </div>
+            </div>
+            <button id="save-custom-media-btn"
+                class="w-full mt-6 bg-blue-600 active:bg-blue-500 text-white py-2.5 rounded-xl transition font-medium shadow-lg shadow-blue-500/20 active:scale-95">Add
+                to Playlist</button>
+        </div>
+    </div>
+
     <!-- Shortcut Modal Overlay -->
     <div id="shortcut-modal"
         class="fixed inset-0 bg-gray-950/80 z-50 flex items-center justify-center hidden backdrop-blur-sm opacity-0 transition-opacity duration-300">
@@ -353,8 +451,8 @@
                     </svg>
                     Keyboard Shortcuts
                 </h3>
-                <button id="close-modal-btn"
-                    class="text-gray-400 hover:text-white transition p-1.5 bg-gray-800 rounded-lg hover:bg-gray-700">
+                <button id="close-shortcut-modal-btn"
+                    class="text-gray-400 active:text-white transition p-1.5 bg-gray-800 rounded-lg active:scale-95">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -405,26 +503,31 @@
                         + << /kbd>
                 </div>
             </div>
-            <button id="close-modal-bottom-btn"
-                class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl transition font-medium shadow-lg shadow-blue-500/20">Got
+            <button id="close-shortcut-bottom-btn"
+                class="w-full mt-6 bg-blue-600 active:bg-blue-500 text-white py-2.5 rounded-xl transition font-medium shadow-lg shadow-blue-500/20 active:scale-95">Got
                 it!</button>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- JSON Data ---
-            const mediaList = [
+            // --- Default JSON Data ---
+            const defaultMediaList = [
                 {
                     title: "Spring boot jwt",
                     description: "",
-                    videoPath: "https://mystorage813.netlify.app/video.mp4",
-                    audioPath: "https://mystorage813.netlify.app/audio.mp4"
+                    videoPath: "https://mystorage813.netlify.app/v1.mp4",
+                    audioPath: "https://mystorage813.netlify.app/a1.mp4"
                 }
             ];
 
+            // Load Custom Media from LocalStorage
+            let customMediaList = JSON.parse(localStorage.getItem('syncMixer_customMedia')) || [];
+            let mediaList = [...defaultMediaList, ...customMediaList];
+
             let currentIndex = 0;
-            let timeToRestore = 0;
+            let hasCustomAudio = false;
+            let editingIndex = -1;
 
             // DOM Elements
             const playerContainer = document.getElementById('player-container');
@@ -456,16 +559,26 @@
             const audioVolume = document.getElementById('audio-volume');
             const videoMuteBtn = document.getElementById('video-mute-btn');
             const audioMuteBtn = document.getElementById('audio-mute-btn');
+            const audioMixerContainer = document.getElementById('audio-mixer-container');
 
-            // Modal Elements
+            const errorOverlay = document.getElementById('error-overlay');
+            const errorMessage = document.getElementById('error-message');
+
+            // Modals
             const shortcutModal = document.getElementById('shortcut-modal');
-            const closeModalBtn = document.getElementById('close-modal-btn');
-            const closeModalBottomBtn = document.getElementById('close-modal-bottom-btn');
             const headerShortcutBtn = document.getElementById('header-shortcut-btn');
+            const closeShortcutModalBtn = document.getElementById('close-shortcut-modal-btn');
+            const closeShortcutBottomBtn = document.getElementById('close-shortcut-bottom-btn');
+
+            const addMediaModal = document.getElementById('add-media-modal');
+            const openAddMediaModalBtn = document.getElementById('open-add-media-modal');
+            const closeAddModalBtn = document.getElementById('close-add-modal-btn');
+            const saveCustomMediaBtn = document.getElementById('save-custom-media-btn');
+            const modalFormTitle = document.getElementById('modal-form-title');
 
             let isDraggingSeek = false;
             let idleTimeout;
-            let isModalOpen = false;
+            let activeModal = null;
             const playbackSpeeds = [0.5, 0.75, 1, 1.25, 1.5, 2];
             let currentSpeedIndex = 2; // Index of 1 (normal speed)
 
@@ -473,59 +586,93 @@
             let preMuteVideoVol = 0.8;
             let preMuteAudioVol = 0.5;
 
-            playlistCount.textContent = `${mediaList.length} items`;
-
-            // Remove focus from buttons and range inputs after clicking 
-            document.querySelectorAll('button, input').forEach(el => {
+            // Remove focus from buttons and range inputs ONLY, so text inputs work perfectly
+            document.querySelectorAll('button, input[type="range"]').forEach(el => {
                 el.addEventListener('mouseup', function () { this.blur(); });
             });
 
             // --- Media Session API Setup ---
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.setActionHandler('play', () => {
-                    audio.play();
+                    if (hasCustomAudio) audio.play();
                     if (!document.hidden) video.play();
                     updatePlayPauseUI(true);
                 });
                 navigator.mediaSession.setActionHandler('pause', () => {
-                    audio.pause();
+                    if (hasCustomAudio) audio.pause();
                     video.pause();
                     updatePlayPauseUI(false);
                 });
                 navigator.mediaSession.setActionHandler('seekbackward', () => {
-                    const newTime = Math.max(audio.currentTime - 5, 0);
-                    audio.currentTime = newTime;
+                    const newTime = Math.max(video.currentTime - 5, 0);
+                    if (hasCustomAudio) audio.currentTime = newTime;
                     video.currentTime = newTime;
                 });
                 navigator.mediaSession.setActionHandler('seekforward', () => {
-                    const newTime = Math.min(audio.currentTime + 5, audio.duration || video.duration || 0);
-                    audio.currentTime = newTime;
+                    const newTime = Math.min(video.currentTime + 5, video.duration || 0);
+                    if (hasCustomAudio) audio.currentTime = newTime;
                     video.currentTime = newTime;
                 });
             }
 
+            // --- Helper to get unique save key ---
+            const getSaveKey = (videoPath) => {
+                return 'syncMixer_time_' + btoa(videoPath).substring(0, 30);
+            };
+
             // --- 1. Initialization & Render Logic ---
             const renderPlaylist = () => {
                 playlistContainer.innerHTML = '';
+                playlistCount.textContent = `${mediaList.length} items`;
 
                 mediaList.forEach((item, index) => {
                     const li = document.createElement('li');
                     const isActive = index === currentIndex;
                     const displayDuration = item.duration || '--:--';
+                    const isCustom = index >= defaultMediaList.length;
 
                     li.innerHTML = `
-                        <button class="w-full text-left p-3 rounded-xl transition-all duration-200 border flex flex-col gap-1 group
-                            ${isActive ? 'bg-gray-800 border-blue-500/50 shadow-md border-l-4 border-l-blue-500' : 'bg-transparent border-transparent hover:bg-gray-800/50 hover:border-gray-700'}" 
-                            data-index="${index}">
-                            <div class="flex justify-between items-start w-full">
-                                <span class="font-semibold ${isActive ? 'text-blue-400' : 'text-gray-200 group-hover:text-white'} text-sm sm:text-base">${item.title}</span>
-                                <span id="duration-${index}" class="text-xs font-mono text-gray-500 bg-black/20 px-1.5 py-0.5 rounded">${displayDuration}</span>
+                        <div class="relative w-full text-left p-3 rounded-xl transition-all duration-200 border flex flex-col gap-1 
+                            ${isActive ? 'bg-gray-800 border-blue-500/50 shadow-md border-l-4 border-l-blue-500' : 'bg-transparent border-transparent active:bg-gray-800/50'}" 
+                            >
+                            <button class="w-full text-left focus:outline-none" data-index="${index}">
+                                <div class="flex justify-between items-start w-full">
+                                    <span class="font-semibold ${isActive ? 'text-blue-400' : 'text-gray-200'} text-sm sm:text-base pr-[70px]">${item.title}</span>
+                                    <span id="duration-${index}" class="text-xs font-mono text-gray-500 bg-black/20 px-1.5 py-0.5 rounded">${displayDuration}</span>
+                                </div>
+                                <div class="flex items-center gap-2 mt-1">
+                                    ${isCustom ? '<span class="text-[10px] uppercase font-bold tracking-wider bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded">Custom</span>' : ''}
+                                    <span class="text-xs text-gray-500 line-clamp-1">${item.description || 'No description'}</span>
+                                </div>
+                            </button>
+                            ${isCustom ? `
+                            <div class="absolute top-3 right-3 flex gap-1">
+                                <button class="edit-custom-btn text-gray-400 active:text-blue-400 transition bg-gray-900 p-1.5 rounded-md active:scale-95" data-index="${index}" title="Edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
+                                <button class="delete-custom-btn text-gray-400 active:text-red-400 transition bg-gray-900 p-1.5 rounded-md active:scale-95" data-index="${index}" title="Remove">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                                </button>
                             </div>
-                            <span class="text-xs text-gray-500 line-clamp-1">${item.description}</span>
-                        </button>
+                            ` : ''}
+                        </div>
                     `;
 
-                    li.querySelector('button').addEventListener('click', () => loadMedia(index));
+                    // Main button click (load media)
+                    li.querySelector('button[data-index]').addEventListener('click', () => loadMedia(index));
+
+                    // Edit and Delete actions
+                    if (isCustom) {
+                        li.querySelector('.edit-custom-btn').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            editCustomMedia(index);
+                        });
+                        li.querySelector('.delete-custom-btn').addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            deleteCustomMedia(index);
+                        });
+                    }
+
                     playlistContainer.appendChild(li);
 
                     // Dynamically calculate and cache duration if not already available
@@ -534,7 +681,14 @@
                         tempVideo.preload = 'metadata';
                         tempVideo.onloadedmetadata = () => {
                             const formatted = formatTime(tempVideo.duration);
-                            item.duration = formatted; // Cache the value
+                            item.duration = formatted;
+
+                            if (isCustom) {
+                                const customIdx = index - defaultMediaList.length;
+                                customMediaList[customIdx].duration = formatted;
+                                localStorage.setItem('syncMixer_customMedia', JSON.stringify(customMediaList));
+                            }
+
                             const durationSpan = document.getElementById(`duration-${index}`);
                             if (durationSpan) {
                                 durationSpan.textContent = formatted;
@@ -546,22 +700,39 @@
             };
 
             const loadMedia = (index) => {
+                if (index >= mediaList.length) index = 0;
+
                 currentIndex = index;
                 const selectedMedia = mediaList[index];
+                hasCustomAudio = !!selectedMedia.audioPath;
 
                 localStorage.setItem('syncMixer_lastVideoIndex', index);
+                const saveKey = getSaveKey(selectedMedia.videoPath);
+                const savedTimeStr = localStorage.getItem(saveKey);
 
-                const savedTime = localStorage.getItem(`syncMixer_savedTime_${index}`);
-                timeToRestore = savedTime ? parseFloat(savedTime) : 0;
+                // Reset Error UI
+                errorOverlay.classList.add('hidden');
+                errorMessage.textContent = "";
 
                 renderPlaylist();
                 playerSubtitle.textContent = selectedMedia.title;
 
+                // Configure Logic based on Audio preference
                 video.src = selectedMedia.videoPath;
-                audio.src = selectedMedia.audioPath;
+                if (hasCustomAudio) {
+                    audio.src = selectedMedia.audioPath;
+                    video.volume = 0; // Dubbing mode: mute original video audio
+                    videoVolume.value = 0;
+                    audio.volume = audioVolume.value;
+                    audioMixerContainer.classList.remove('opacity-30', 'pointer-events-none');
+                } else {
+                    audio.removeAttribute('src');
+                    video.volume = videoVolume.value; // Play normal video audio
+                    audioMixerContainer.classList.add('opacity-30', 'pointer-events-none');
+                }
 
-                video.volume = videoVolume.value;
-                audio.volume = audioVolume.value;
+                updateVideoMuteUI();
+                updateAudioMuteUI();
 
                 applyPlaybackSpeed(playbackSpeeds[currentSpeedIndex]);
 
@@ -574,35 +745,222 @@
                 }
 
                 video.load();
-                audio.load();
+                if (hasCustomAudio) audio.load();
 
                 updatePlayPauseUI(false);
                 seekBar.value = 0;
                 currentTimeEl.textContent = "0:00";
 
+                video.addEventListener('loadedmetadata', function onLoaded() {
+                    const timeToRestore = savedTimeStr ? parseFloat(savedTimeStr) : 0;
+                    if (timeToRestore > 0 && isFinite(timeToRestore)) {
+                        if (video.duration - timeToRestore > 2) {
+                            video.currentTime = timeToRestore;
+                            if (hasCustomAudio) audio.currentTime = timeToRestore;
+                        } else {
+                            localStorage.setItem(saveKey, 0);
+                        }
+                    }
+                    video.removeEventListener('loadedmetadata', onLoaded);
+                });
+
                 const playPromise = video.play();
                 if (playPromise !== undefined) {
-                    playPromise.catch(e => console.log("User gesture required to play"));
+                    playPromise.catch(error => {
+                        // Ignore auto-play blocking errors silently to prevent console blunders
+                        if (error.name !== 'NotAllowedError' && error.name !== 'AbortError') {
+                            console.warn("Playback prevented:", error);
+                        }
+                    });
                 }
             };
 
+            const handleMediaError = (e, type) => {
+                errorOverlay.classList.remove('hidden');
+                let msg = "Unable to load media.";
+                if (e.target.error) {
+                    switch (e.target.error.code) {
+                        case 1: msg = `${type} loading was aborted.`; break;
+                        case 2: msg = `Network error while downloading ${type}.`; break;
+                        case 3: msg = `${type} format is unsupported or the file is corrupted.`; break;
+                        case 4: msg = `The ${type} URL is invalid, broken, or blocked by the host.`; break;
+                    }
+                }
+                errorMessage.textContent = msg;
+                updatePlayPauseUI(false);
+            };
+
+            video.addEventListener('error', (e) => handleMediaError(e, 'Video'));
+            audio.addEventListener('error', (e) => handleMediaError(e, 'Audio'));
+
+            const deleteCustomMedia = (index) => {
+                const customIndex = index - defaultMediaList.length;
+                customMediaList.splice(customIndex, 1);
+                localStorage.setItem('syncMixer_customMedia', JSON.stringify(customMediaList));
+
+                mediaList = [...defaultMediaList, ...customMediaList];
+
+                if (currentIndex === index) {
+                    loadMedia(0);
+                } else {
+                    if (currentIndex > index) {
+                        currentIndex--;
+                        localStorage.setItem('syncMixer_lastVideoIndex', currentIndex);
+                    }
+                    renderPlaylist();
+                }
+            };
+
+            const editCustomMedia = (index) => {
+                editingIndex = index;
+                const item = mediaList[index];
+
+                document.getElementById('custom-title').value = item.title;
+                document.getElementById('custom-desc').value = item.description || '';
+                document.getElementById('custom-video-url').value = item.videoPath;
+                document.getElementById('custom-audio-url').value = item.audioPath || '';
+
+                modalFormTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Edit Custom Media`;
+                if (saveCustomMediaBtn) saveCustomMediaBtn.textContent = "Update Media";
+
+                openModal(addMediaModal);
+            };
+
+            // --- Modal Helpers ---
+            const openModal = (modalElement) => {
+                if (!modalElement) return;
+                if (activeModal) closeModal(activeModal);
+                modalElement.classList.remove('hidden');
+                void modalElement.offsetWidth; // Force reflow
+                modalElement.classList.replace('opacity-0', 'opacity-100');
+                modalElement.querySelector('div').classList.replace('scale-95', 'scale-100');
+                activeModal = modalElement;
+            };
+
+            const closeModal = (modalElement) => {
+                if (!modalElement) return;
+                modalElement.classList.replace('opacity-100', 'opacity-0');
+                modalElement.querySelector('div').classList.replace('scale-100', 'scale-95');
+                setTimeout(() => modalElement.classList.add('hidden'), 300);
+                activeModal = null;
+            };
+
+            // --- Add/Edit Custom Media Modal Logic ---
+            if (openAddMediaModalBtn) {
+                openAddMediaModalBtn.addEventListener('click', () => {
+                    editingIndex = -1;
+                    document.getElementById('custom-title').value = '';
+                    document.getElementById('custom-desc').value = '';
+                    document.getElementById('custom-video-url').value = '';
+                    document.getElementById('custom-audio-url').value = '';
+
+                    if (modalFormTitle) {
+                        modalFormTitle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Add Custom Media`;
+                    }
+                    if (saveCustomMediaBtn) saveCustomMediaBtn.textContent = "Add to Playlist";
+                    openModal(addMediaModal);
+                });
+            }
+
+            if (closeAddModalBtn) {
+                closeAddModalBtn.addEventListener('click', () => closeModal(addMediaModal));
+            }
+
+            if (saveCustomMediaBtn) {
+                saveCustomMediaBtn.addEventListener('click', () => {
+                    const title = document.getElementById('custom-title').value.trim();
+                    const desc = document.getElementById('custom-desc').value.trim();
+                    const vUrl = document.getElementById('custom-video-url').value.trim();
+                    const aUrl = document.getElementById('custom-audio-url').value.trim();
+
+                    if (!title || !vUrl) {
+                        alert("Please fill in Title and Video URL.");
+                        return;
+                    }
+
+                    // Proper URL validation
+                    try {
+                        new URL(vUrl);
+                        if (aUrl) new URL(aUrl);
+                    } catch (_) {
+                        alert("Please enter a valid HTTP/HTTPS URL for the media links.");
+                        return;
+                    }
+
+                    const newItem = {
+                        title: title,
+                        description: desc,
+                        videoPath: vUrl
+                    };
+                    if (aUrl) newItem.audioPath = aUrl;
+
+                    if (editingIndex >= 0) {
+                        const customIdx = editingIndex - defaultMediaList.length;
+                        // Preserve duration if path hasn't changed
+                        if (customMediaList[customIdx].videoPath === vUrl && customMediaList[customIdx].duration) {
+                            newItem.duration = customMediaList[customIdx].duration;
+                        }
+                        customMediaList[customIdx] = newItem;
+                        localStorage.setItem('syncMixer_customMedia', JSON.stringify(customMediaList));
+                        mediaList = [...defaultMediaList, ...customMediaList];
+
+                        closeModal(addMediaModal);
+                        if (currentIndex === editingIndex) loadMedia(editingIndex);
+                        else renderPlaylist();
+                    } else {
+                        customMediaList.push(newItem);
+                        localStorage.setItem('syncMixer_customMedia', JSON.stringify(customMediaList));
+                        mediaList = [...defaultMediaList, ...customMediaList];
+
+                        closeModal(addMediaModal);
+                        loadMedia(mediaList.length - 1);
+                    }
+                });
+            }
+
+            // --- Shortcut Modal Logic ---
+            if (headerShortcutBtn) {
+                headerShortcutBtn.addEventListener('click', () => openModal(shortcutModal));
+            }
+            if (closeShortcutModalBtn) {
+                closeShortcutModalBtn.addEventListener('click', () => closeModal(shortcutModal));
+            }
+            if (closeShortcutBottomBtn) {
+                closeShortcutBottomBtn.addEventListener('click', () => closeModal(shortcutModal));
+            }
+
+            window.addEventListener('click', (e) => {
+                if (activeModal && e.target.closest('.max-w-md') === null && !e.target.closest('button')) {
+                    closeModal(activeModal);
+                }
+            });
+
             // --- 2. Master Sync Logic (Robust Background Support) ---
             video.addEventListener('play', () => {
-                audio.play().catch(e => console.log("Audio play prevented", e));
+                if (hasCustomAudio) {
+                    const audioPlayPromise = audio.play();
+                    if (audioPlayPromise !== undefined) {
+                        audioPlayPromise.catch(error => {
+                            if (error.name !== 'NotAllowedError' && error.name !== 'AbortError') {
+                                console.warn("Audio playback prevented:", error);
+                            }
+                        });
+                    }
+                }
                 updatePlayPauseUI(true);
                 resetIdleTimer();
             });
 
             video.addEventListener('pause', () => {
                 if (!document.hidden) {
-                    audio.pause();
+                    if (hasCustomAudio) audio.pause();
                     updatePlayPauseUI(false);
                     resetIdleTimer();
                 }
             });
 
             audio.addEventListener('pause', () => {
-                if (document.hidden) {
+                if (document.hidden && hasCustomAudio) {
                     video.pause();
                     updatePlayPauseUI(false);
                 }
@@ -613,9 +971,12 @@
 
             document.addEventListener('visibilitychange', () => {
                 if (!document.hidden) {
-                    if (!audio.paused) {
+                    if (hasCustomAudio && !audio.paused) {
                         video.currentTime = audio.currentTime;
-                        video.play().catch(e => console.log("Video resume prevented"));
+                        const p = video.play();
+                        if (p !== undefined) p.catch(() => { });
+                        updatePlayPauseUI(true);
+                    } else if (!hasCustomAudio && !video.paused) {
                         updatePlayPauseUI(true);
                     } else {
                         syncAudioToVideo();
@@ -630,22 +991,24 @@
                 }
 
                 if (!video.paused && video.currentTime > 0) {
-                    localStorage.setItem(`syncMixer_savedTime_${currentIndex}`, video.currentTime);
+                    const saveKey = getSaveKey(mediaList[currentIndex].videoPath);
+                    localStorage.setItem(saveKey, video.currentTime);
                 }
 
-                if (!document.hidden && Math.abs(video.currentTime - audio.currentTime) > 0.2 && !video.paused) {
+                if (hasCustomAudio && !document.hidden && Math.abs(video.currentTime - audio.currentTime) > 0.2 && !video.paused) {
                     syncAudioToVideo();
                 }
             });
 
             audio.addEventListener('timeupdate', () => {
-                if (document.hidden && !isDraggingSeek) {
+                if (hasCustomAudio && document.hidden && !isDraggingSeek) {
                     seekBar.value = audio.currentTime;
                     currentTimeEl.textContent = formatTime(audio.currentTime);
                 }
             });
 
             function syncAudioToVideo() {
+                if (!hasCustomAudio) return;
                 if (audio.duration && video.currentTime <= audio.duration) {
                     audio.currentTime = video.currentTime;
                 } else if (!audio.duration) {
@@ -656,27 +1019,17 @@
             video.addEventListener('loadedmetadata', () => {
                 seekBar.max = video.duration;
                 totalTimeEl.textContent = formatTime(video.duration);
-
-                if (timeToRestore > 0) {
-                    if (video.duration - timeToRestore > 2) {
-                        video.currentTime = timeToRestore;
-                        audio.currentTime = timeToRestore;
-                    } else {
-                        localStorage.setItem(`syncMixer_savedTime_${currentIndex}`, 0);
-                    }
-                    timeToRestore = 0;
-                }
             });
 
             // --- 3. UI Control Implementations ---
 
             const togglePlayPause = () => {
-                if (video.paused && audio.paused) {
+                if (video.paused && (!hasCustomAudio || audio.paused)) {
                     const playPromise = video.play();
                     if (playPromise !== undefined) playPromise.catch(() => { });
                 } else {
                     video.pause();
-                    audio.pause();
+                    if (hasCustomAudio) audio.pause();
                     updatePlayPauseUI(false);
                 }
             };
@@ -730,24 +1083,30 @@
 
             seekBar.addEventListener('change', () => {
                 video.currentTime = seekBar.value;
-                audio.currentTime = seekBar.value;
+                if (hasCustomAudio) audio.currentTime = seekBar.value;
                 isDraggingSeek = false;
-                localStorage.setItem(`syncMixer_savedTime_${currentIndex}`, video.currentTime);
+
+                const saveKey = getSaveKey(mediaList[currentIndex].videoPath);
+                localStorage.setItem(saveKey, video.currentTime);
             });
 
             // Skip Buttons (+5s / -5s)
             skipForwardBtn.addEventListener('click', () => {
                 const newTime = Math.min(video.currentTime + 5, video.duration);
                 video.currentTime = newTime;
-                audio.currentTime = newTime;
-                localStorage.setItem(`syncMixer_savedTime_${currentIndex}`, video.currentTime);
+                if (hasCustomAudio) audio.currentTime = newTime;
+
+                const saveKey = getSaveKey(mediaList[currentIndex].videoPath);
+                localStorage.setItem(saveKey, video.currentTime);
             });
 
             skipBackwardBtn.addEventListener('click', () => {
                 const newTime = Math.max(video.currentTime - 5, 0);
                 video.currentTime = newTime;
-                audio.currentTime = newTime;
-                localStorage.setItem(`syncMixer_savedTime_${currentIndex}`, video.currentTime);
+                if (hasCustomAudio) audio.currentTime = newTime;
+
+                const saveKey = getSaveKey(mediaList[currentIndex].videoPath);
+                localStorage.setItem(saveKey, video.currentTime);
             });
 
             // Speed Control
@@ -854,41 +1213,19 @@
                 updateAudioMuteUI();
             });
 
-            // --- Modal Logic ---
-            const toggleModal = () => {
-                if (isModalOpen) {
-                    shortcutModal.classList.replace('opacity-100', 'opacity-0');
-                    shortcutModal.querySelector('div').classList.replace('scale-100', 'scale-95');
-                    setTimeout(() => shortcutModal.classList.add('hidden'), 300);
-                } else {
-                    shortcutModal.classList.remove('hidden');
-                    void shortcutModal.offsetWidth;
-                    shortcutModal.classList.replace('opacity-0', 'opacity-100');
-                    shortcutModal.querySelector('div').classList.replace('scale-95', 'scale-100');
-                }
-                isModalOpen = !isModalOpen;
-            };
-
-            headerShortcutBtn.addEventListener('click', toggleModal);
-            closeModalBtn.addEventListener('click', toggleModal);
-            closeModalBottomBtn.addEventListener('click', toggleModal);
-
-            shortcutModal.addEventListener('click', (e) => {
-                if (e.target === shortcutModal) toggleModal();
-            });
-
             // --- Keyboard Shortcuts ---
             document.addEventListener('keydown', (e) => {
                 if (document.activeElement.tagName === 'INPUT') return;
 
                 if (e.key === '?' || (e.shiftKey && e.key === '/')) {
                     e.preventDefault();
-                    toggleModal();
+                    if (activeModal !== shortcutModal) openModal(shortcutModal);
+                    else closeModal(shortcutModal);
                     return;
                 }
 
-                if (isModalOpen) {
-                    if (e.key === 'Escape') toggleModal();
+                if (activeModal) {
+                    if (e.key === 'Escape') closeModal(activeModal);
                     return;
                 }
 
@@ -921,20 +1258,22 @@
                         e.preventDefault();
                         const forwardTime = Math.min(video.currentTime + 5, video.duration);
                         video.currentTime = forwardTime;
-                        audio.currentTime = forwardTime;
-                        localStorage.setItem(`syncMixer_savedTime_${currentIndex}`, video.currentTime);
+                        if (hasCustomAudio) audio.currentTime = forwardTime;
+                        const fSaveKey = getSaveKey(mediaList[currentIndex].videoPath);
+                        localStorage.setItem(fSaveKey, video.currentTime);
                         break;
                     case 'ArrowLeft':
                         e.preventDefault();
                         const backwardTime = Math.max(video.currentTime - 5, 0);
                         video.currentTime = backwardTime;
-                        audio.currentTime = backwardTime;
-                        localStorage.setItem(`syncMixer_savedTime_${currentIndex}`, video.currentTime);
+                        if (hasCustomAudio) audio.currentTime = backwardTime;
+                        const bSaveKey = getSaveKey(mediaList[currentIndex].videoPath);
+                        localStorage.setItem(bSaveKey, video.currentTime);
                         break;
                     case 'ArrowUp':
                         e.preventDefault();
                         video.volume = Math.min(1, video.volume + 0.05);
-                        audio.volume = Math.min(1, audio.volume + 0.05);
+                        if (hasCustomAudio) audio.volume = Math.min(1, audio.volume + 0.05);
                         videoVolume.value = video.volume;
                         audioVolume.value = audio.volume;
                         updateVideoMuteUI();
@@ -943,7 +1282,7 @@
                     case 'ArrowDown':
                         e.preventDefault();
                         video.volume = Math.max(0, video.volume - 0.05);
-                        audio.volume = Math.max(0, audio.volume - 0.05);
+                        if (hasCustomAudio) audio.volume = Math.max(0, audio.volume - 0.05);
                         videoVolume.value = video.volume;
                         audioVolume.value = audio.volume;
                         updateVideoMuteUI();

@@ -1209,8 +1209,30 @@
                 <option value="OPTIONS">OPTIONS</option>
                 <option value="HEAD">HEAD</option>
             </select>
-            <input type="text" id="reqUrl" class="input-base url-input"
-                placeholder="Enter request URL (e.g., {{base_url}}/v1/users)">
+            <div style="flex: 1; display: flex; position: relative; align-items: center;">
+                <input type="text" id="reqUrl" class="input-base url-input" style="width: 100%; padding-right: 70px;"
+                    placeholder="Enter request URL (e.g., {{base_url}}/v1/users)">
+
+                <div style="position: absolute; right: 6px; display: flex; gap: 4px;">
+                    <button class="btn-icon" onclick="copyRequestUrl()" title="Copy full URL to clipboard"
+                        style="padding: 4px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                    <button id="btnOpenTab" class="btn-icon" onclick="openUrlInNewTab()"
+                        title="Open GET request in new browser tab" style="padding: 4px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <line x1="10" y1="14" x2="21" y2="3"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
             <button class="btn btn-primary" onclick="sendRequest()">Send</button>
         </div>
 
@@ -1612,6 +1634,10 @@
             const method = selectElem.value.toLowerCase();
             const colorVar = `var(--method-${method}, var(--text-primary))`;
             selectElem.style.color = colorVar;
+            const btnOpenTab = document.getElementById('btnOpenTab');
+            if (btnOpenTab) {
+                btnOpenTab.style.display = method === 'get' ? 'inline-block' : 'none';
+            }
         }
 
         function switchReqTab(tabName) {
@@ -3070,6 +3096,62 @@
                 btnIcon.innerHTML = '<polyline points="18 15 12 9 6 15"></polyline>'; // Up arrow
                 document.getElementById('toggleCollectionsBtn').title = "Collapse All";
             }
+        }
+        // --- URL Helper, Copy, and Open in Tab Logic ---
+        
+        function getFinalComputedUrl() {
+            const currentCollection = document.getElementById('reqCollection').value.trim();
+            const rawUrl = document.getElementById('reqUrl').value.trim();
+            let baseUrl = interpolateString(rawUrl, currentCollection);
+
+            if (!baseUrl) return null;
+            
+            if (!/^https?:\/\//i.test(baseUrl)) {
+                baseUrl = 'https://' + baseUrl;
+            }
+
+            const params = getKvData('paramsContainer').filter(p => p.isActive && p.key);
+            try {
+                const fetchUrl = new URL(baseUrl);
+                params.forEach(p => {
+                    const pKey = interpolateString(p.key, currentCollection);
+                    const pVal = interpolateString(p.value, currentCollection);
+                    fetchUrl.searchParams.set(pKey, pVal);
+                });
+                return fetchUrl.toString();
+            } catch (e) {
+                return baseUrl; // Fallback to raw string if parsing fails
+            }
+        }
+
+        function copyRequestUrl() {
+            const url = getFinalComputedUrl();
+            if (!url) {
+                showToast("Please enter a valid URL first", "warning");
+                return;
+            }
+            
+            navigator.clipboard.writeText(url).then(() => {
+                showToast("Full URL copied to clipboard", "success");
+            }).catch(() => {
+                showToast("Failed to copy URL", "error");
+            });
+        }
+
+        function openUrlInNewTab() {
+            const method = document.getElementById('reqMethod').value;
+            if (method !== 'GET') {
+                showToast("Only GET requests can be directly opened in a browser tab", "warning");
+                return;
+            }
+            
+            const url = getFinalComputedUrl();
+            if (!url) {
+                showToast("Please enter a valid URL first", "warning");
+                return;
+            }
+            
+            window.open(url, '_blank');
         }
     </script>
 </body>

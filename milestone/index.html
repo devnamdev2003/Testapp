@@ -990,6 +990,7 @@
         let isSharedMode = false;
         let sharedWorkbookId = null;
         let collapsedCategories = {}; // Tracks which categories are collapsed in the sidebar
+        let openDescriptions = new Set(); // Tracks open markdown descriptions to keep them open on checkbox click
         const DEFAULT_WORKBOOK = {
             id: 'wb-default',
             title: 'My Workbook',
@@ -1585,6 +1586,7 @@
 
         function selectLab(labId, pushHistory = true) {
             activeLabId = labId;
+            openDescriptions.clear(); // Clear open descriptions when switching modules
             if (pushHistory) {
                 let url;
                 if (isSharedMode) {
@@ -1782,13 +1784,13 @@
                                 </div>
                                 ${step.description ? `
                                 <button type="button" onclick="toggleStepDesc(event, 'desc-${escapeHTML(step.id)}')" class="ml-2 p-1.5 text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-brand/10 hover:text-brand rounded-lg transition shrink-0 border border-gray-200 dark:border-gray-700 hover:border-brand/30 shadow-sm" title="Show Description">
-                                    <i class="fa-solid fa-chevron-down transition-transform duration-300 text-sm" id="icon-${escapeHTML(step.id)}"></i>
+                                    <i class="fa-solid fa-chevron-down transition-transform duration-300 text-sm ${openDescriptions.has('desc-' + escapeHTML(step.id)) ? 'rotate-180' : ''}" id="icon-${escapeHTML(step.id)}"></i>
                                 </button>
                                 ` : ''}
                             </div>
                         </label>
                         ${step.description ? `
-                        <div id="desc-${escapeHTML(step.id)}" class="hidden px-6 pb-6 ml-[3.75rem] sm:ml-[4rem] pl-4 border-l-2 border-brand/20 text-sm prose prose-slate dark:prose-invert max-w-none">${renderDesc}</div>
+                        <div id="desc-${escapeHTML(step.id)}" class="${openDescriptions.has('desc-' + escapeHTML(step.id)) ? 'animate-fade-in' : 'hidden'} px-6 pb-6 ml-[3.75rem] sm:ml-[4rem] pl-4 border-l-2 border-brand/20 text-sm prose prose-slate dark:prose-invert max-w-none">${renderDesc}</div>
                         ` : ''}
                     </div>
                 `;
@@ -1855,10 +1857,12 @@
                 descEl.classList.remove('hidden');
                 descEl.classList.add('animate-fade-in');
                 iconEl.classList.add('rotate-180');
+                openDescriptions.add(descId);
             } else {
                 descEl.classList.add('hidden');
                 descEl.classList.remove('animate-fade-in');
                 iconEl.classList.remove('rotate-180');
+                openDescriptions.delete(descId);
             }
         }
 

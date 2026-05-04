@@ -1777,8 +1777,9 @@
                 html += `
                     <div class="group relative">
                         ${checked ? `<div class="absolute left-0 top-0 bottom-0 w-1 bg-brand transition-all duration-300 z-10"></div>` : ''}
-                        <label class="flex items-start p-5 sm:p-6 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                            <div class="relative flex items-center pt-0.5 shrink-0">
+                        <div class="flex items-start p-5 sm:p-6 ${step.description ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors' : ''}"
+                            ${step.description ? `onclick="toggleStepDesc(event, 'desc-${escapeHTML(step.id)}')"` : ''}>
+                            <div class="relative flex items-center pt-0.5 shrink-0" onclick="event.stopPropagation();">
                                 <input type="checkbox" ${checked ? 'checked' : ''} 
                                     onchange="toggleStep('${escapeHTML(step.id)}')"
                                     class="peer appearance-none w-6 h-6 border-2 border-gray-300 dark:border-gray-500 rounded-lg checked:bg-brand checked:border-brand transition-all cursor-pointer shadow-sm hover:border-brand">
@@ -1789,13 +1790,8 @@
                                     <span class="text-sm font-bold text-gray-400 dark:text-gray-500 w-8 shrink-0 mt-0.5">${idx + 1}.</span>
                                     <span class="text-lg leading-snug font-medium ${checked ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-200'} transition-all pr-4">${escapeHTML(step.text)}</span>
                                 </div>
-                                ${step.description ? `
-                                <button type="button" onclick="toggleStepDesc(event, 'desc-${escapeHTML(step.id)}')" class="ml-2 p-1.5 text-gray-400 bg-gray-100 dark:bg-gray-800 hover:bg-brand/10 hover:text-brand rounded-lg transition shrink-0 border border-gray-200 dark:border-gray-700 hover:border-brand/30 shadow-sm" title="Show Description">
-                                    <i class="fa-solid fa-chevron-down transition-transform duration-300 text-sm ${openDescriptions.has('desc-' + escapeHTML(step.id)) ? 'rotate-180' : ''}" id="icon-${escapeHTML(step.id)}"></i>
-                                </button>
-                                ` : ''}
                             </div>
-                        </label>
+                        </div>
                         ${step.description ? `
                         <div id="desc-${escapeHTML(step.id)}" class="${openDescriptions.has('desc-' + escapeHTML(step.id)) ? 'animate-fade-in' : 'hidden'} px-6 pb-6 ml-[3.75rem] sm:ml-[4rem] pl-4 border-l-2 border-brand/20 text-sm prose prose-slate dark:prose-invert max-w-none">${renderDesc}</div>
                         ` : ''}
@@ -1856,19 +1852,21 @@
         }
 
         function toggleStepDesc(e, descId) {
-            e.preventDefault();
-            e.stopPropagation();
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             const descEl = document.getElementById(descId);
             const iconEl = document.getElementById(descId.replace('desc-', 'icon-'));
             if (descEl.classList.contains('hidden')) {
                 descEl.classList.remove('hidden');
                 descEl.classList.add('animate-fade-in');
-                iconEl.classList.add('rotate-180');
+                if (iconEl) iconEl.classList.add('rotate-180');
                 openDescriptions.add(descId);
             } else {
                 descEl.classList.add('hidden');
                 descEl.classList.remove('animate-fade-in');
-                iconEl.classList.remove('rotate-180');
+                if (iconEl) iconEl.classList.remove('rotate-180');
                 openDescriptions.delete(descId);
             }
         }
